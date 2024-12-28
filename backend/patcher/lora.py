@@ -15,6 +15,11 @@ def get_function(function_name: str):
         if hasattr(lora_collection, function_name):
             return getattr(lora_collection, function_name)
 
+##这个方法 `load_lora` 的作用是加载 LoRA（Low-Rank Adaptation）模型的补丁，
+# 并将其与现有模型的权重进行合并。具体来说，它调用了一个名为 `load_lora` 的函数，该函数返回两个字典
+# ：`patch_dict` 和 `remaining_dict`。
+# `patch_dict` 包含了需要应用到模型上的补丁，而 `remaining_dict` 则包含了未被应用的剩余部分。
+#
 
 def load_lora(lora, to_load):
     patch_dict, remaining_dict = get_function('load_lora')(lora, to_load)
@@ -71,7 +76,7 @@ def weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation
         weight[:] = weight_calc
     return weight
 
-
+# 用于将lora的参数合并到weight中
 @torch.inference_mode()
 def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=torch.float32):
     # Modified from https://github.com/comfyanonymous/ComfyUI/blob/39f114c44bb99d4a221e8da451d4f2a20119c674/comfy/model_patcher.py#L446
@@ -130,6 +135,10 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
                 else:
                     weight += strength * memory_management.cast_to_device(w1, weight.device, weight.dtype)
         elif patch_type == "lora":
+            # In the merge_lora_to_weight function, when the patch_type is lora, the variables mat1 and mat2 represent the following parameters in the LoRA (Low-Rank Adaptation) theory:
+            # mat1 corresponds to the low-rank matrix ( A ) in LoRA.
+            # mat2 corresponds to the low-rank matrix ( B ) in LoRA
+            # 这里获取到了lora的参数，2个低秩矩阵，然后根据公式计算出了lora_diff，然后根据lora_diff和strength计算出了新的weight
             mat1 = memory_management.cast_to_device(v[0], weight.device, computation_dtype)
             mat2 = memory_management.cast_to_device(v[1], weight.device, computation_dtype)
             dora_scale = v[4]

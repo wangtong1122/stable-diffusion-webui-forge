@@ -99,8 +99,8 @@ def webui_worker():
         from modules_forge.forge_canvas.canvas import canvas_js_root_path
 
         app, local_url, share_url = shared.demo.launch(
-            share=cmd_opts.share,
-            server_name=initialize_util.gradio_server_name(),
+            share=True,
+            server_name="0.0.0.0",
             server_port=cmd_opts.port,
             ssl_keyfile=cmd_opts.tls_keyfile,
             ssl_certfile=cmd_opts.tls_certfile,

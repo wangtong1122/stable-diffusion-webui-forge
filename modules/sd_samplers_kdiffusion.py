@@ -10,7 +10,7 @@ from modules.shared import opts
 import modules.shared as shared
 from backend.sampling.sampling_function import sampling_prepare, sampling_cleanup
 
-
+#各种的采样器查看Euler的实现逻辑
 samplers_k_diffusion = [
     ('DPM++ 2M', 'sample_dpmpp_2m', ['k_dpmpp_2m'], {'scheduler': 'karras'}),
     ('DPM++ SDE', 'sample_dpmpp_sde', ['k_dpmpp_sde'], {'scheduler': 'karras', "second_order": True, "brownian_noise": True}),
@@ -33,7 +33,12 @@ samplers_k_diffusion = [
     ('DEIS', 'sample_deis', ['deis'], {}),
 ]
 
-
+#这行代码的作用是创建一个 `SamplerData` 对象，
+# 并将其添加到 `samplers_data_k_diffusion`
+# 列表中。`SamplerData` 对象包含了采样器的标签
+# 、一个用于创建 `KDiffusionSampler` 对象的 lambda 函数、别名和选项。
+# 这个 lambda 函数接受一个模型参数，并使用 `funcname` 和模型来实例化 `KDiffusionSampler`。
+# 只有当 `funcname` 是可调用的或在 `k_diffusion.sampling` 模块中存在时，才会创建 `SamplerData` 对象。
 samplers_data_k_diffusion = [
     sd_samplers_common.SamplerData(label, lambda model, funcname=funcname: KDiffusionSampler(funcname, model), aliases, options)
     for label, funcname, aliases, options in samplers_k_diffusion
@@ -193,8 +198,10 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
 
         return samples
 
+    #实际调用了采用器的函数在processing中
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        #这一步中进行模型权重合并
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
         steps = steps or p.steps

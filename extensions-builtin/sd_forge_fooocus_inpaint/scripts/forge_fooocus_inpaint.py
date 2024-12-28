@@ -96,6 +96,7 @@ class FooocusInpaintPatcher(ControlModelPatcher):
         lora_keys.update({x: x for x in unet.model.state_dict().keys()})
         loaded_lora = load_fooocus_patch(self.state_dict, lora_keys)
 
+        # Load patches
         patched = unet.add_patches(filename=self.filename, patches=loaded_lora)
 
         not_patched_count = sum(1 for x in loaded_lora if x not in patched)

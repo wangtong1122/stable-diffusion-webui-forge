@@ -28,7 +28,13 @@ LORA_CLIP_MAP = {
     "self_attn.out_proj": "self_attn_out_proj",
 }
 
-
+#加载lora的方法,参数是啥?
+#`load_lora` 函数的两个参数 `lora` 和 `to_load` 分别是：
+#
+# - `lora`: 一个字典，包含了所有需要加载的 LoRA 权重和相关参数。
+# - `to_load`: 一个列表，包含了需要加载的特定层的名称。
+#
+# 这些参数用于从 `lora` 字典中提取相应的权重和参数，并将它们存储在 `patch_dict` 中。
 def load_lora(lora, to_load):
     patch_dict = {}
     loaded_keys = set()

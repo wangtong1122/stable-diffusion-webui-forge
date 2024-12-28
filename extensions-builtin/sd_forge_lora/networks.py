@@ -19,6 +19,12 @@ def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filen
     clip_keys = model_lora_keys_clip(clip.cond_stage_model) if clip is not None else {}
 
     lora_unmatch = lora
+    #`lora_unmatch` 是一个变量，用于存储在加载 LoRA (Low-Rank Adaptation) 补丁时未匹配的键。
+    # 在加载 LoRA 补丁的过程中，函数 `load_lora` 会尝试将补丁中的键与模型中的键进行匹配。任何未匹配的键都会被存储在 `lora_unmatch` 中。
+    # 在提供的代码中，`lora_unmatch` 最初被设置为 `lora`，其中包含所有的 LoRA 补丁。在调用 `load_lora`
+    # 函数并传入 `unet_keys` 和 `clip_keys` 后，`lora_unmatch` 将只包含那些未能与 UNet 或 CLIP 模型键匹配的键。
+    # 这有助于在加载过程中识别和处理任何未匹配的键。
+    #lora_unet为patches
     lora_unet, lora_unmatch = load_lora(lora_unmatch, unet_keys)
     lora_clip, lora_unmatch = load_lora(lora_unmatch, clip_keys)
 
@@ -33,6 +39,7 @@ def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filen
     new_clip = clip.clone() if clip is not None else None
 
     if new_model is not None and len(lora_unet) > 0:
+        #add_patches将lora_unet中的内容加载到model中 所有的模型都集成自ModelPatcher调用.add_patches
         loaded_keys = new_model.add_patches(filename=filename, patches=lora_unet, strength_patch=strength_model, online_mode=online_mode)
         skipped_keys = [item for item in lora_unet if item not in loaded_keys]
         if len(skipped_keys) > 12:
@@ -64,10 +71,12 @@ def load_network(name, network_on_disk):
 
     return net
 
-
+#加载网络 这个里会把 base中的lora_patches赋值
+#然后在smaple的时候会利用lora_patches进行代码合并然后采样
 def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=None):
     global lora_state_dict_cache
 
+    #获取当前的sd_model
     current_sd = sd_models.model_data.get_sd_model()
     if current_sd is None:
         return
@@ -87,16 +96,19 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
     if any(x is None for x in networks_on_disk):
         list_available_networks()
+        #将可用的网络加载到available_networks中
         networks_on_disk = [available_networks.get(name, None) if name.lower() in forbidden_network_aliases else available_network_aliases.get(name, None) for name in names]
 
     for i, (network_on_disk, name) in enumerate(zip(networks_on_disk, names)):
         try:
+            #加载网络
             net = load_network(name, network_on_disk)
         except Exception as e:
             errors.display(e, f"loading network {network_on_disk.filename}")
             continue
         net.mentioned_name = name
         network_on_disk.read_hash()
+        #loaded_networks存储了加载的网络
         loaded_networks.append(net)
 
     online_mode = dynamic_args.get('online_lora', False)
@@ -116,9 +128,11 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     current_sd.current_lora_hash = compiled_lora_targets_hash
     current_sd.forge_objects.unet = current_sd.forge_objects_original.unet
     current_sd.forge_objects.clip = current_sd.forge_objects_original.clip
-
+    #遍历compiled_lora_targets 也是就是遍历加载的网络
     for filename, strength_model, strength_clip, online_mode in compiled_lora_targets:
+        #计算lora_sd作为patches传入load_lora_for_models
         lora_sd = load_lora_state_dict(filename)
+        #load_lora_for_models加载lora_sd中的内容到model和clip中
         current_sd.forge_objects.unet, current_sd.forge_objects.clip = load_lora_for_models(
             current_sd.forge_objects.unet, current_sd.forge_objects.clip, lora_sd, strength_model, strength_clip,
             filename=filename, online_mode=online_mode)
@@ -127,6 +141,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
     return
 
 
+#将本地可用的网络加载到available_networks中
 def process_network_files(names: list[str] | None = None):
     candidates = list(shared.walk_files(shared.cmd_opts.lora_dir, allowed_extensions=[".pt", ".ckpt", ".safetensors"]))
     for filename in candidates:
@@ -205,6 +220,7 @@ extra_network_lora = None
 
 available_networks = {}
 available_network_aliases = {}
+#存储加载的网络
 loaded_networks = []
 loaded_bundle_embeddings = {}
 networks_in_memory = {}

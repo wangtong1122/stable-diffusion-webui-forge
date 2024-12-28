@@ -45,6 +45,7 @@ options_templates: dict = None
 opts: options.Options = None
 restricted_opts: set[str] = None
 
+#在`shared.py`中，`sd_model`变量用于存储当前加载的Stable Diffusion模型实例。这个变量在整个应用程序中被共享，以便其他模块和函数可以访问和操作该模型。通过将模型实例存储在`sd_model`中，可以确保在不同的部分之间一致地使用同一个模型实例。
 sd_model = None
 
 settings_components: dict = None
@@ -92,4 +93,4 @@ refresh_checkpoints = shared_items.refresh_checkpoints
 list_samplers = shared_items.list_samplers
 reload_hypernetworks = shared_items.reload_hypernetworks
 
-hf_endpoint = os.getenv('HF_ENDPOINT', 'https://huggingface.co')
+hf_endpoint = os.getenv('HF_ENDPOINT', 'https://hf-mirror.com')

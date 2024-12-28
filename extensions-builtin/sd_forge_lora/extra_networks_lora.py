@@ -11,6 +11,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
 
     remove_symbols = str.maketrans('', '', ":,")
 
+    # This function is called when the network is activated
     def activate(self, p, params_list):
         additional = shared.opts.sd_lora
 
@@ -21,9 +22,13 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             params_list.append(extra_networks.ExtraNetworkParams(items=[additional, shared.opts.extra_networks_default_multiplier]))
 
         names = []
+        #te_multipliers：存储文本编码器（Text Encoder）的乘数值。
+        #unet_multipliers：存储 U-Net 的乘数值。
+        #dyn_dims：存储动态维度值。
         te_multipliers = []
         unet_multipliers = []
         dyn_dims = []
+        #遍历参数列表
         for params in params_list:
             assert params.items
 
@@ -42,6 +47,7 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
             unet_multipliers.append(unet_multiplier)
             dyn_dims.append(dyn_dim)
 
+        #引入networks包，加载lora网络
         networks.load_networks(names, te_multipliers, unet_multipliers, dyn_dims)
 
         if shared.opts.lora_add_hashes_to_infotext:

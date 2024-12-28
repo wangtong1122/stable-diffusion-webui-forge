@@ -515,6 +515,7 @@ class LoadedModel:
 
         bake_gguf_model(self.real_model)
 
+        #将Lora合并到模型中
         self.model.refresh_loras()
 
         if is_intel_xpu() and not args.disable_ipex_hijack:
@@ -610,7 +611,7 @@ def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_mem
 
     return int(max(0, suggestion))
 
-
+#加载模型和Lora到GPU
 def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
     global vram_state
 
@@ -680,7 +681,7 @@ def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
 
         if vram_set_state == VRAMState.NO_VRAM:
             model_gpu_memory_when_using_cpu_swap = 0
-
+        #加载模型到GPU
         loaded_model.model_load(model_gpu_memory_when_using_cpu_swap)
         current_loaded_models.insert(0, loaded_model)
 

@@ -60,6 +60,7 @@ class ModelPatcher:
         self.load_device = load_device
         self.offload_device = offload_device
 
+        #实例化LoraLoader
         if not hasattr(model, 'lora_loader'):
             model.lora_loader = LoraLoader(model)
 
@@ -87,7 +88,7 @@ class ModelPatcher:
         if hasattr(other, 'model') and self.model is other.model:
             return True
         return False
-
+    #关键，这里将lora的patch添加到lora_patches中,在unet的方法中调用
     def add_patches(self, *, filename, patches, strength_patch=1.0, strength_model=1.0, online_mode=False):
         lora_identifier = (filename, strength_patch, strength_model, online_mode)
         this_patches = {}
@@ -121,7 +122,7 @@ class ModelPatcher:
             if online_mode:
                 return True
         return False
-
+    #关键这里是将lora_patches合并到权重中
     def refresh_loras(self):
         self.lora_loader.refresh(lora_patches=self.lora_patches, offload_device=self.offload_device)
         return

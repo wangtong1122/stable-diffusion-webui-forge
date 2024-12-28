@@ -118,7 +118,8 @@ def txt2img_image_conditioning(sd_model, x, width, height):
         # Pretty sure we can just make this a 1x1 image since its not going to be used besides its batch size.
         return x.new_zeros(x.shape[0], 5, 1, 1, dtype=x.dtype, device=x.device)
 
-
+#2个子类StableDiffusionProcessingTxt2Img
+#StableDiffusionProcessingImg2Img
 @dataclass(repr=False)
 class StableDiffusionProcessing:
     sd_model: object = None
@@ -137,7 +138,8 @@ class StableDiffusionProcessing:
     sampler_name: str = None
     scheduler: str = None
     batch_size: int = 1
-    n_iter: int = 1
+    #
+    n_iter: int = 1 # Number of iterations `n_iter` 和 `steps` 是用于控制图像生成过程的参数。表示生成图像的迭代次数。每次迭代都会生成一组图像表示每次迭代中采样的步数。步数越多，生成的图像质量通常越高，但也会增加计算时间。
     steps: int = 50
     cfg_scale: float = 7.0
     distilled_cfg_scale: float = 3.5
@@ -848,7 +850,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
 
     return res
 
-
+#图升文和图升图的主要处理函数核心流程
 def process_images_inner(p: StableDiffusionProcessing) -> Processed:
     """this is the main loop that both txt2img and img2img use; it calls func_init once inside all the scopes and func_sample once per batch"""
 
@@ -921,8 +923,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
         if state.job_count == -1:
             state.job_count = p.n_iter
 
-        for n in range(p.n_iter):
-            p.iteration = n
+        for n in range(p.n_iter):#执行n_iter次生成 n_iter个图像
+            p.iteration = n #当前迭代次数
 
             if state.skipped:
                 state.skipped = False
@@ -935,6 +937,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 sd_models.forge_model_reload()  # model can be changed for example by refiner, hiresfix
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_original.shallow_copy()
+            #这两行代码的作用是从 `p.all_prompts` 和 `p.all_negative_prompts` 列表中提取当前批次的提示和负面提示，并将它们分别赋值给 `p.prompts` 和 `p.negative_prompts`。具体来说，它们根据当前迭代次数 `n` 和批次大小 `p.batch_size` 计算出当前批次的起始和结束索引，然后使用这些索引从列表中提取相应的子列表。
             p.prompts = p.all_prompts[n * p.batch_size:(n + 1) * p.batch_size]
             p.negative_prompts = p.all_negative_prompts[n * p.batch_size:(n + 1) * p.batch_size]
             p.seeds = p.all_seeds[n * p.batch_size:(n + 1) * p.batch_size]
@@ -951,7 +954,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             p.parse_extra_network_prompts()
 
-            if not p.disable_extra_networks:
+            if not p.disable_extra_networks:#是否禁用额外网络,激活额外网络
                 extra_networks.activate(p, p.extra_network_data)
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_after_applying_lora.shallow_copy()
@@ -986,7 +989,7 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
                 p.extra_generation_params['Noise Schedule'] = opts.sd_noise_schedule
                 sigmas_backup = p.sd_model.forge_objects.unet.model.predictor.sigmas
                 p.sd_model.forge_objects.unet.model.predictor.set_sigmas(rescale_zero_terminal_snr_sigmas(p.sd_model.forge_objects.unet.model.predictor.sigmas))
-
+            #这里调用了sample的方法，进行采样，其中包括了lora权重的合并
             samples_ddim = p.sample(conditioning=p.c, unconditional_conditioning=p.uc, seeds=p.seeds, subseeds=p.subseeds, subseed_strength=p.subseed_strength, prompts=p.prompts)
 
             for x_sample in samples_ddim:
@@ -1339,9 +1342,10 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             if self.hr_upscaler is not None:
                 self.extra_generation_params["Hires upscaler"] = self.hr_upscaler
 
+    #在哪里调用了这个采样函数呢？
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
         self.sampler = sd_samplers.create_sampler(self.sampler_name, self.sd_model)
-
+        #samplers_k_diffusion中的Euler sampler_name = 'Euler' sampler_name是在界面上选择的采样器
         if self.firstpass_image is not None and self.enable_hr:
             # here we don't need to generate image, we just take self.firstpass_image and prepare it for hires fix
 
@@ -1383,7 +1387,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             if self.modified_noise is not None:
                 x = self.modified_noise
                 self.modified_noise = None
-
+            #这里是生成图像的核心代码采样
             samples = self.sampler.sample(self, x, conditioning, unconditional_conditioning, image_conditioning=self.txt2img_image_conditioning(x))
             del x
 

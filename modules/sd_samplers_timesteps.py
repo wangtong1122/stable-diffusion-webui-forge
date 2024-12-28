@@ -121,6 +121,7 @@ class CompVisSampler(sd_samplers_common.Sampler):
 
         return samples
 
+    #进行时间步和空间步的采样
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)

@@ -4,7 +4,7 @@ import torch
 from backend.modules.k_model import KModel
 from backend.patcher.base import ModelPatcher
 
-
+#Forge的核心是UnetPatcher类，它是一个ModelPatcher的子类，用于管理模型的patch和option
 class UnetPatcher(ModelPatcher):
     @classmethod
     def from_model(cls, model, diffusers_scheduler, config, k_predictor=None):
@@ -177,6 +177,7 @@ class UnetPatcher(ModelPatcher):
                     self.set_model_patch_replace(patch, target, block_name, number, transformer_index)
         return
 
+    #添加patch
     def load_frozen_patcher(self, filename, state_dict, strength):
         patch_dict = {}
         for k, w in state_dict.items():

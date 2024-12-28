@@ -44,7 +44,8 @@ class ExtraNetworkParams:
     def __eq__(self, other):
         return self.items == other.items
 
-
+#ExtraNetwork类是一个抽象类，包含activate和deactivate两个方法
+#ExtraNetworkLora和ExtraNetworkHypernet类继承自ExtraNetwork类
 class ExtraNetwork:
     def __init__(self, name):
         self.name = name
@@ -87,6 +88,23 @@ class ExtraNetwork:
         raise NotImplementedError
 
 
+#`lookup_extra_networks` 方法的输入是一个字典 `extra_network_data`，其键是 `extra_network` 的名称，值是 `ExtraNetworkParams` 对象的列表。输出是一个字典，其键是 `ExtraNetwork` 对象，值是 `ExtraNetworkParams` 对象的列表。
+
+# 输入示例：
+# ```python
+# {
+#     'lora': [<ExtraNetworkParams object>],
+#     'hypernet': [<ExtraNetworkParams object>]
+# }
+# ```
+#
+# 输出示例：
+# ```python
+# {
+#     <ExtraNetworkLora object>: [<ExtraNetworkParams object>],
+#     <ExtraNetworkHypernet object>: [<ExtraNetworkParams object>]
+# }
+# ```
 def lookup_extra_networks(extra_network_data):
     """returns a dict mapping ExtraNetwork objects to lists of arguments for those extra networks.
 
@@ -118,6 +136,10 @@ def lookup_extra_networks(extra_network_data):
             logging.info(f"Skipping unknown extra network: {extra_network_name}")
             continue
 
+        #这行代码的作用是将 `extra_network_args` 列表中的元素添加到字典 `res` 中对应的 `extra_network` 键的值列表中。如果 `res` 字典中还没有 `extra_network` 键，则使用 `setdefault` 方法创建一个新的空列表作为该键的值，然后再将 `extra_network_args` 列表中的元素添加到这个新列表中。
+        # 具体来说：
+        # - `res.setdefault(extra_network, [])`：如果 `res` 字典中存在 `extra_network` 键，则返回其对应的值（一个列表）；如果不存在，则创建一个新的空列表作为该键的值，并返回这个新列表。
+        # - `.extend(extra_network_args)`：将 `extra_network_args` 列表中的所有元素添加到 `res` 字典中 `extra_network` 键对应的列表中。
         res.setdefault(extra_network, []).extend(extra_network_args)
 
     return res
@@ -132,7 +154,7 @@ def activate(p, extra_network_data):
     for extra_network, extra_network_args in lookup_extra_networks(extra_network_data).items():
 
         try:
-            extra_network.activate(p, extra_network_args)
+            extra_network.activate(p, extra_network_args)#调用ExtraNetwork的activate方法
             activated.append(extra_network)
         except Exception as e:
             errors.display(e, f"activating extra network {extra_network.name} with arguments {extra_network_args}")
@@ -185,9 +207,10 @@ def parse_prompt(prompt):
         res[name].append(ExtraNetworkParams(items=args.split(":")))
 
         return ""
-
+    #根据正则表达式re_extra_net，将prompt中的extra network提取出来，然后将其替换为空
+    #返回的res是一个字典，key是extra network的名字，value是一个ExtraNetworkParams对象的列表
     prompt = re.sub(re_extra_net, found, prompt)
-
+    #prompt是一个字符串，res是一个字典 res表示lora的配置信息
     return prompt, res
 
 

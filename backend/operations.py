@@ -9,8 +9,8 @@ from backend.patcher.lora import merge_lora_to_weight
 
 
 stash = {}
-
-
+#If online_mode is True, the patches are stored in the forge_online_loras attribute of the model's layers, allowing them to be applied dynamically during inference or training.
+#retrieves the weight and bias of a given layer, applying any necessary patches and transformations. Here is the method:
 def get_weight_and_bias(layer, weight_args=None, bias_args=None, weight_fn=None, bias_fn=None):
     patches = getattr(layer, 'forge_online_loras', None)
     weight_patches, bias_patches = None, None
