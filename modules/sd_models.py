@@ -400,7 +400,7 @@ class SdModelData:
 
     def get_sd_model(self):
         return self.sd_model
-
+    #对sd_model进行赋值
     def set_sd_model(self, v):
         self.sd_model = v
 
@@ -475,7 +475,7 @@ def forge_model_reload():
 
     if model_data.forge_hash == current_hash:
         return model_data.sd_model, False
-
+    #载入模型 forge_loading_parameters这个已经设置了checkpoint_info
     print('Loading Model: ' + str(model_data.forge_loading_parameters))
 
     timer = Timer()
@@ -487,8 +487,8 @@ def forge_model_reload():
         gc.collect()
 
     timer.record("unload existing model")
-
     checkpoint_info = model_data.forge_loading_parameters['checkpoint_info']
+    print("checkpoint数据",checkpoint_info)#在开始进行推理，会调用这里
 
     if checkpoint_info is None:
         raise ValueError('You do not have any model! Please download at least one model in [models/Stable-diffusion].')
@@ -512,7 +512,7 @@ def forge_model_reload():
     timer.record("calculate hash")
 
     shared.opts.data["sd_checkpoint_hash"] = checkpoint_info.sha256
-
+    #这里对share中的sd_model进行赋值
     model_data.set_sd_model(sd_model)
 
     script_callbacks.model_loaded_callback(sd_model)

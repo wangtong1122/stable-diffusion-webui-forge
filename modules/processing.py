@@ -118,7 +118,8 @@ def txt2img_image_conditioning(sd_model, x, width, height):
         # Pretty sure we can just make this a 1x1 image since its not going to be used besides its batch size.
         return x.new_zeros(x.shape[0], 5, 1, 1, dtype=x.dtype, device=x.device)
 
-#2个子类StableDiffusionProcessingTxt2Img
+#2个子类
+# StableDiffusionProcessingTxt2Img
 #StableDiffusionProcessingImg2Img
 @dataclass(repr=False)
 class StableDiffusionProcessing:
@@ -802,7 +803,12 @@ need_global_unload = False
 
 def manage_model_and_prompt_cache(p: StableDiffusionProcessing):
     global need_global_unload
-
+#     #这行代码的作用是调用 `forge_model_reload` 函数来重新加载模型，并将返回的模型对象和一个布尔值（表示是否刚刚重新加载）赋值给 `p.sd_model` 和 `just_reloaded` 变量。
+#
+# 具体来说：
+# - `p.sd_model`：将重新加载的模型对象赋值给 `p.sd_model`。
+# - `just_reloaded`：布尔值，指示模型是否刚刚重新加载。
+    #
     p.sd_model, just_reloaded = forge_model_reload()
 
     if need_global_unload and not just_reloaded:
@@ -835,6 +841,7 @@ def process_images(p: StableDiffusionProcessing) -> Processed:
             # avoid model load from hiresfix quickbutton, as it could be redundant
             pass
         else:
+            #这里进行了模型的加载
             manage_model_and_prompt_cache(p)
 
         # backwards compatibility, fix sampler and scheduler if invalid

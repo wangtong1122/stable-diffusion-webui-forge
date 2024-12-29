@@ -58,14 +58,20 @@ def make_checkpoint_manager_ui():
 
     if shared.opts.sd_model_checkpoint in [None, 'None', 'none', '']:
         if len(sd_models.checkpoints_list) == 0:
+            #如果没有模型，进行模型的加载
             sd_models.list_models()
         if len(sd_models.checkpoints_list) > 0:
+            #如果没有选择模型，将第一个模型的值赋值给sd_model_checkpoint
             shared.opts.set('sd_model_checkpoint', next(iter(sd_models.checkpoints_list.values())).name)
 
+    #创建了切换模型的ui将值赋值给forge_preset
     ui_forge_preset = gr.Radio(label="UI", value=lambda: shared.opts.forge_preset, choices=['sd', 'xl', 'flux', 'all'], elem_id="forge_ui_preset")
 
+    #获取到了ckpt列表给用户选择
     ckpt_list, vae_list = refresh_models()
 
+
+    #在选择了模型之后，将模型的值赋值给checkpoint
     ui_checkpoint = gr.Dropdown(
         value=lambda: shared.opts.sd_model_checkpoint,
         label="Checkpoint",
@@ -121,6 +127,7 @@ def make_checkpoint_manager_ui():
     ui_clip_skip = gr.Slider(label="Clip skip", value=lambda: shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
     bind_to_opts(ui_clip_skip, 'CLIP_stop_at_last_layers', save=True)
 
+    #当模型改变后，刷新模型的加载参数
     ui_checkpoint.change(checkpoint_change, inputs=[ui_checkpoint], show_progress=False)
     ui_vae.change(modules_change, inputs=[ui_vae], queue=False, show_progress=False)
 
@@ -226,6 +233,7 @@ def refresh_model_loading_parameters():
 
     dynamic_args['online_lora'] = lora_fp16
 
+    #给forge_loading_parameters赋值设置模型
     model_data.forge_loading_parameters = dict(
         checkpoint_info=checkpoint_info,
         additional_modules=shared.opts.forge_additional_modules,
@@ -238,14 +246,14 @@ def refresh_model_loading_parameters():
 
     return
 
-
+#模型改变后，刷新模型的加载参数
 def checkpoint_change(ckpt_name:str, save=True, refresh=True):
     """ checkpoint name can be a number of valid aliases. Returns True if checkpoint changed. """
     new_ckpt_info = sd_models.get_closet_checkpoint_match(ckpt_name)
     current_ckpt_info = sd_models.get_closet_checkpoint_match(shared.opts.data.get('sd_model_checkpoint', ''))
     if new_ckpt_info == current_ckpt_info:
         return False
-
+    #如果模型改变了，将新的模型的值赋值给sd_model_checkpoint
     shared.opts.set('sd_model_checkpoint', ckpt_name)
 
     if save:
@@ -387,7 +395,7 @@ def on_preset_change(preset=None):
             gr.update(visible=True, value=getattr(shared.opts, "xl_t2i_hr_cfg", 5.0)),  # ui_txt2img_hr_cfg
             gr.update(visible=False, value=3.5),                                        # ui_txt2img_hr_distilled_cfg
         ]
-
+    #如果选择的是flux模型
     if shared.opts.forge_preset == 'flux':
         model_mem = getattr(shared.opts, "flux_GPU_MB", total_vram - 1024)
         if model_mem < 0 or model_mem > total_vram:

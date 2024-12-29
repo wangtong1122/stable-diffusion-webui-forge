@@ -174,11 +174,16 @@ class Shared(sys.modules[__name__].__class__):
 
         return modules.sd_models.model_data.get_sd_model()
 
+    #设置sd_model
     @sd_model.setter
     def sd_model(self, value):
         import modules.sd_models
 
         modules.sd_models.model_data.set_sd_model(value)
-
-
+#
+# `sys.modules['modules.shared'].__class__ = Shared` 这一行代码的作用是将 `modules.shared` 模块的类替换为 `Shared` 类。这样做的目的是为了在 `modules.shared` 模块中使用 `Shared` 类的属性和方法。
+#
+# `Shared` 类定义了一个 `sd_model` 属性，该属性在访问时会动态加载和返回 `sd_model`，而不是在程序启动时加载。这种方式可以延迟加载 `sd_model`，从而提高程序的启动速度。
+#
+# 通过将 `modules.shared` 模块的类替换为 `Shared` 类，代码可以利用 `Shared` 类的延迟加载特性和其他自定义功能。
 sys.modules['modules.shared'].__class__ = Shared

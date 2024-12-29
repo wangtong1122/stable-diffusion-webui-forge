@@ -297,6 +297,7 @@ class UiSettings:
 
     def add_quicksettings(self):
         with gr.Row(elem_id="quicksettings", variant="compact") as quicksettings_row:
+            print("模型加载:ui_settings.py: add_quicksettings")
             main_entry.make_checkpoint_manager_ui()
             for _i, k, _item in sorted(self.quicksettings_list, key=lambda x: self.quicksettings_names.get(x[1], x[0])):
                 component = create_setting_component(k, is_quicksettings=True)

@@ -267,7 +267,7 @@ def split_state_dict(sd, additional_state_dicts: list = None):
 
     return state_dict, guess
 
-
+#根据checkpoint文件加载模型
 @torch.inference_mode()
 def forge_loader(sd, additional_state_dicts=None):
     try:
