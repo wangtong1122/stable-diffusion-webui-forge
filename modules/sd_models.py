@@ -395,7 +395,7 @@ class FakeInitialModel:
 class SdModelData:
     def __init__(self):
         self.sd_model = FakeInitialModel()
-        self.forge_loading_parameters = {}
+        self.forge_loading_parameters = {}#存储的是checkpoint_info
         self.forge_hash = ''
 
     def get_sd_model(self):
@@ -472,6 +472,7 @@ def apply_token_merging(sd_model, token_merging_ratio):
 @torch.inference_mode()
 def forge_model_reload():
     current_hash = str(model_data.forge_loading_parameters)
+    print("当前的模型数据",model_data.forge_loading_parameters)#在开始进行推理，会调用这里
 
     if model_data.forge_hash == current_hash:
         return model_data.sd_model, False
@@ -488,13 +489,15 @@ def forge_model_reload():
 
     timer.record("unload existing model")
     checkpoint_info = model_data.forge_loading_parameters['checkpoint_info']
-    print("checkpoint数据",checkpoint_info)#在开始进行推理，会调用这里
+    print("forge_loading_parameterst数据",model_data.forge_loading_parameters)#在开始进行推理，会调用这里
 
     if checkpoint_info is None:
         raise ValueError('You do not have any model! Please download at least one model in [models/Stable-diffusion].')
 
     state_dict = checkpoint_info.filename
     additional_state_dicts = model_data.forge_loading_parameters.get('additional_modules', [])
+    #{'checkpoint_info': {'filename': '/home/sunset/newspace/sdf2/stable-diffusion-webui-forge/models/Stable-diffusion/f1.safetensors', 'hash': '26acbda5'}, 'additional_modules': ['/home/sunset/newspace/sdf2/stable-diffusion-webui-forge/models/VAE/ae.safetensors', '/home/sunset/newspace/sdf2/stable-diffusion-webui-forge/models/text_encoder/clip_l.safetensors', '/home/sunset/newspace/sdf2/stable-diffusion-webui-forge/models/text_encoder/t5xxl_fp8_e4m3fn.safetensors'], 'unet_storage_dtype': None}
+
 
     timer.record("cache state dict")
 
@@ -502,6 +505,7 @@ def forge_model_reload():
     dynamic_args['embedding_dir'] = cmd_opts.embeddings_dir
     dynamic_args['emphasis_name'] = opts.emphasis
     sd_model = forge_loader(state_dict, additional_state_dicts=additional_state_dicts)
+    print("sd_model数据",sd_model)#加载的模型数据
     timer.record("forge model load")
 
     sd_model.extra_generation_params = {}

@@ -81,6 +81,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         self.func = funcname if callable(funcname) else getattr(k_diffusion.sampling, self.funcname)
 
         self.model_wrap_cfg = CFGDenoiserKDiffusion(self)
+        #self.model_wrap 就是 shared.sd_model
         self.model_wrap = self.model_wrap_cfg.inner_model
 
     def get_sigmas(self, p, steps):
@@ -201,6 +202,8 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
     #实际调用了采用器的函数在processing中
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
+        print("我是采样器",steps)
+        # 模型中的 self.forge_objects = ForgeObjects(unet=unet, clip=clip, vae=vae, clipvision=None)
         #这一步中进行模型权重合并
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 

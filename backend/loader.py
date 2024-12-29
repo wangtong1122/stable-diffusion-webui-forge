@@ -237,6 +237,9 @@ def preprocess_state_dict(sd):
 def split_state_dict(sd, additional_state_dicts: list = None):
     sd = load_torch_file(sd)
     sd = preprocess_state_dict(sd)
+    #这行代码的意思是调用 huggingface_guess 模块中的 guess 函数，并将 sd 作为参数传递给它。
+    # guess 函数会根据 sd 的内容进行推测，并返回一个包含推测结果的对象
+    #A simple tool to guess an HuggingFace repo URL from a state dict.
     guess = huggingface_guess.guess(sd)
 
     if isinstance(additional_state_dicts, list):
@@ -267,7 +270,7 @@ def split_state_dict(sd, additional_state_dicts: list = None):
 
     return state_dict, guess
 
-#根据checkpoint文件加载模型
+#根据checkpoint文件加载模型，比如选择的是flux模型，checkpoint是不一样的
 @torch.inference_mode()
 def forge_loader(sd, additional_state_dicts=None):
     try:
