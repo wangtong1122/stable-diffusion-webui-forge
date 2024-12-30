@@ -114,7 +114,7 @@ class BrownianTreeNoiseSampler:
         t0, t1 = self.transform(torch.as_tensor(sigma)), self.transform(torch.as_tensor(sigma_next))
         return self.tree(t0, t1) / (t1 - t0).abs().sqrt()
 
-#Euler采样的实际实现
+#Euler采样的实际实现 extra_args包含了conditional和unconditional的参数
 @torch.no_grad()
 def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None, s_churn=0., s_tmin=0., s_tmax=float('inf'), s_noise=1.):
     """Implements Algorithm 2 (Euler steps) from Karras et al. (2022)."""
@@ -126,6 +126,12 @@ def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None,
         sigma_hat = sigmas[i] * (gamma + 1)
         if gamma > 0:
             x = x + eps * (sigma_hat ** 2 - sigmas[i] ** 2) ** 0.5
+        #调用模型的forward函数，进行噪声去除 调用flux的forward函数
+        #def forward(self, x, timestep, context, y, guidance=None, **kwargs):
+        print(f"模型的采样：model= {model} ex = {extra_args}")
+        #model= CFGDenoiserKDiffusion
+        #ex = {'cond': <modules.prompt_parser.MulticondLearnedConditioning object at 0x7f64381e1840>, 'image_cond','uncond': None, 'cond_scale': 1, 's_min_uncond': 0.0
+        #在加了负向提示词后 'uncond': [[ScheduledPromptConditioning(end_at_step=1, cond={'crossattn':
         denoised = model(x, sigma_hat * s_in, **extra_args)
         d = to_d(x, sigma_hat, denoised)
         if callback is not None:

@@ -45,7 +45,8 @@ class Flux(ForgeDiffusionEngine):
                 max_shift=1.15,
             )
             self.use_distilled_cfg_scale = True
-
+        #FluxTransformer2DModel
+        print("Flux的",huggingface_components['transformer'])
         unet = UnetPatcher.from_model(
             model=huggingface_components['transformer'],
             diffusers_scheduler=None,
@@ -109,6 +110,7 @@ class Flux(ForgeDiffusionEngine):
 
     @torch.inference_mode()
     def decode_first_stage(self, x):
+        print("Flux的解码阶段",x.shape)
         sample = self.forge_objects.vae.first_stage_model.process_out(x)
         sample = self.forge_objects.vae.decode(sample).movedim(-1, 1) * 2.0 - 1.0
         return sample.to(x)

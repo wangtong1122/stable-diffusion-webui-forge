@@ -199,7 +199,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
 
         return samples
 
-    #实际调用了采用器的函数在processing中
+    #实际调用了采用器的函数在processing中 这里的conditioning和unconditional_conditioning是什么?
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         print("我是采样器",steps)
@@ -244,7 +244,8 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
             'cond_scale': p.cfg_scale,
             's_min_uncond': self.s_min_uncond
         }
-
+        print("我是采样器", self.funcname)
+        #启动采样
         samples = self.launch_sampling(steps, lambda: self.func(self.model_wrap_cfg, x, extra_args=self.sampler_extra_args, disable=False, callback=self.callback_state, **extra_params_kwargs))
 
         self.add_infotext(p)

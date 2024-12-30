@@ -1378,7 +1378,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
 
         else:
             # here we generate an image normally
-
+            #rng.ImageRNG是一个随机数生成器
             x = self.rng.next()
 
             self.sd_model.forge_objects = self.sd_model.forge_objects_after_applying_lora.shallow_copy()
@@ -1395,6 +1395,9 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
                 x = self.modified_noise
                 self.modified_noise = None
             #这里是生成图像的核心代码采样
+            #其中x为噪声，conditioning为条件，unconditional_conditioning为无条件条件
+            #对于Euler采样器，这里的采样函数是sample_euler  KDiffusionSampler
+            # print("采样:",x.shape,conditioning.shape,unconditional_conditioning.shape)
             samples = self.sampler.sample(self, x, conditioning, unconditional_conditioning, image_conditioning=self.txt2img_image_conditioning(x))
             del x
 

@@ -378,6 +378,7 @@ class IntegratedFluxTransformer2DModel(nn.Module):
             if guidance is None:
                 raise ValueError("Didn't get guidance strength for guidance distilled model.")
             vec = vec + self.guidance_in(timestep_embedding(guidance, 256).to(img.dtype))
+        #计算vec，vec是什么？
         vec = vec + self.vector_in(y)
         txt = self.txt_in(txt)
         del y, guidance
@@ -397,7 +398,11 @@ class IntegratedFluxTransformer2DModel(nn.Module):
         del vec
         return img
 
+    #x是噪声图像，timestep是时间步，context是文本，y是？，guidance是引导
     def forward(self, x, timestep, context, y, guidance=None, **kwargs):
+        print("IntegratedFluxTransformer2DModel的forward函数",y)
+        # import traceback
+        # traceback.print_stack()
         bs, c, h, w = x.shape
         input_device = x.device
         input_dtype = x.dtype

@@ -19,7 +19,7 @@ class ForgeObjects:
             self.clipvision
         )
 
-
+#几个模型都集成了这个类
 class ForgeDiffusionEngine:
     matched_guesses = []
 
@@ -44,9 +44,10 @@ class ForgeDiffusionEngine:
     def get_learned_conditioning(self, prompt: list[str]):
         pass
 
+    #这个抽象方法在子类中实现
     def encode_first_stage(self, x):
         pass
-
+    #这个抽象方法在子类中实现 对于推理，应该直接执行这个方法
     def decode_first_stage(self, x):
         pass
 

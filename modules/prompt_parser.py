@@ -132,7 +132,7 @@ def get_learned_conditioning_prompt_schedules(prompts, base_steps, hires_steps=N
     promptdict = {prompt: get_schedule(prompt) for prompt in set(prompts)}
     return [promptdict[prompt] for prompt in prompts]
 
-
+#负向提示词的封装
 ScheduledPromptConditioning = namedtuple("ScheduledPromptConditioning", ["end_at_step", "cond"])
 
 
@@ -243,7 +243,7 @@ class ComposableScheduledPromptConditioning:
         self.schedules: list[ScheduledPromptConditioning] = schedules
         self.weight: float = weight
 
-
+#正向提示词的封装
 class MulticondLearnedConditioning:
     def __init__(self, shape, batch):
         self.shape: tuple = shape  # the shape field is needed to send this object to DDIM/PLMS

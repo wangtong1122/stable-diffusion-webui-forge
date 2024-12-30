@@ -89,7 +89,7 @@ class AbstractPrediction(torch.nn.Module):
                     sigma ** 2 + self.sigma_data ** 2) + model_output * sigma * self.sigma_data / (
                     sigma ** 2 + self.sigma_data ** 2) ** 0.5
         else:
-            return model_input - model_output * sigma
+            return model_input - model_output * sigma #计算噪声
 
     def noise_scaling(self, sigma, noise, latent_image, max_denoise=False):
         if self.prediction_type == 'const':

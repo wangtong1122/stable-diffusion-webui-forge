@@ -21,7 +21,6 @@ class KModel(torch.nn.Module):
             self.predictor = k_prediction_from_diffusers_scheduler(diffusers_scheduler)
         else:
             self.predictor = k_predictor
-
     def apply_model(self, x, t, c_concat=None, c_crossattn=None, control=None, transformer_options={}, **kwargs):
         sigma = t
         xc = self.predictor.calculate_input(sigma, x)
@@ -41,8 +40,15 @@ class KModel(torch.nn.Module):
                 if extra.dtype != torch.int and extra.dtype != torch.long:
                     extra = extra.to(dtype)
             extra_conds[o] = extra
-
+        #这个地方是模型的核心，调用了模型的forward函数
+        #self, x, timestep, context, y, guidance=None, **kwargs y是c_crossattn
+        #diffusion_model是这个IntegratedFluxTransformer2DModel
+        #print("这个的",self.diffusion_model)
+        #在KModel的apply_model方法中，control参数对应于IntegratedFluxTransformer2DModel的forward方法中的kwargs参数。
+        # print("额外的",extra_conds)
+        # y在extra_conds中  'guidance': tensor([3.5000], device='cuda:0', dtype=torch.bfloat16)
         model_output = self.diffusion_model(xc, t, context=context, control=control, transformer_options=transformer_options, **extra_conds).float()
+        #模型前向传播计算的噪声
         return self.predictor.calculate_denoised(sigma, model_output, x)
 
     def memory_required(self, input_shape):

@@ -273,7 +273,7 @@ class Sampler:
         self.model_wrap_cfg.total_steps = self.config.total_steps(steps)
         state.sampling_steps = steps
         state.sampling_step = 0
-
+        print(f"Sampling开始了 {self.funcname} for {steps} steps")
         try:
             return func()
         except RecursionError:

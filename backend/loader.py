@@ -282,6 +282,7 @@ def forge_loader(sd, additional_state_dicts=None):
 
     local_path = os.path.join(dir_path, 'huggingface', repo_name)
     config: dict = DiffusionPipeline.load_config(local_path)
+    print("L哦啊的de ",config)
     huggingface_components = {}
     for component_name, v in config.items():
         if isinstance(v, list) and len(v) == 2:
