@@ -349,6 +349,8 @@ class LoraLoader:
         # Patch
 
         for (key, online_mode), current_patches in all_patches.items():
+            # print(f"Patching LoRA哦吼,key:{key}")
+            #key: lora_te1_encoder_block_0_attention_q.weight是每个层的key
             try:
                 parent_layer, child_key, weight = utils.get_attr_with_parent(self.model, key)
                 assert isinstance(weight, torch.nn.Parameter)

@@ -8,7 +8,7 @@ from modules.script_callbacks import ExtraNoiseParams, extra_noise_callback
 
 from modules.shared import opts
 import modules.shared as shared
-from backend.sampling.sampling_function import sampling_prepare, sampling_cleanup
+from backend.sampling.sampling_function import sampling_prepare, sampling_cleanup,refresh_lora
 
 #各种的采样器查看Euler的实现逻辑
 samplers_k_diffusion = [
@@ -199,16 +199,29 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
 
         return samples
 
+    #覆写callback_state方法
+
+    def use_switch_lora_method(self):
+        print(f"测试的以上: {self.model_wrap_cfg.inner_model}")
+        # refresh_lora()
+        return True
+
+    def callback_state(self, state):
+        #调用父类的callback_state方法
+        #设置新的lora权重
+        self.use_switch_lora_method()
+        step = state['i']
+        print(f"KDiffusionSampler Sampling step {step}")
+        super().callback_state(state)
     #实际调用了采用器的函数在processing中 这里的conditioning和unconditional_conditioning是什么?
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
-        print("我是采样器",steps)
         # 模型中的 self.forge_objects = ForgeObjects(unet=unet, clip=clip, vae=vae, clipvision=None)
-        #这一步中进行模型权重合并
+        #这一步中进行模型权重合并 后续可以通过 refresh_lora() 进行Lora的重新合并
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
         steps = steps or p.steps
-
+        print("我是采样器",steps)
         sigmas = self.get_sigmas(p, steps).to(x.device)
 
         if opts.sgm_noise_multiplier:
@@ -245,7 +258,9 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
             's_min_uncond': self.s_min_uncond
         }
         print("我是采样器", self.funcname)
-        #启动采样
+        #启动采样 extra_params_kwargs['n'] = steps
+        print(f"KDiffusionSampler：len(sigmas) = {len(sigmas)}, steps = {steps}")
+        #KDiffusionSampler：len(sigmas) = 6, steps = 5
         samples = self.launch_sampling(steps, lambda: self.func(self.model_wrap_cfg, x, extra_args=self.sampler_extra_args, disable=False, callback=self.callback_state, **extra_params_kwargs))
 
         self.add_infotext(p)

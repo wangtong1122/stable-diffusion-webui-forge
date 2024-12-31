@@ -261,7 +261,7 @@ class Sampler:
 
     def callback_state(self, d):
         step = d['i']
-
+        # print(f"Sampling step {step}")
         if self.stop_at is not None and step > self.stop_at:
             raise InterruptedException
 

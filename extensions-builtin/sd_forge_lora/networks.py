@@ -12,6 +12,7 @@ from backend.utils import load_torch_file
 from backend.patcher.lora import model_lora_keys_clip, model_lora_keys_unet, load_lora
 
 
+#strength_model为模型的权重
 def load_lora_for_models(model, clip, lora, strength_model, strength_clip, filename='default', online_mode=False):
     model_flag = type(model.model).__name__ if model is not None else 'default'
 
@@ -117,6 +118,7 @@ def load_networks(names, te_multipliers=None, unet_multipliers=None, dyn_dims=No
         online_mode = False
 
     compiled_lora_targets = []
+    print("哦吼:",networks_on_disk, unet_multipliers, te_multipliers)
     for a, b, c in zip(networks_on_disk, unet_multipliers, te_multipliers):
         compiled_lora_targets.append([a.filename, b, c, online_mode])
 

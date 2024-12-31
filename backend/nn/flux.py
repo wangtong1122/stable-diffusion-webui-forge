@@ -400,7 +400,7 @@ class IntegratedFluxTransformer2DModel(nn.Module):
 
     #x是噪声图像，timestep是时间步，context是文本，y是？，guidance是引导
     def forward(self, x, timestep, context, y, guidance=None, **kwargs):
-        print("IntegratedFluxTransformer2DModel的forward函数",y)
+        # print("IntegratedFluxTransformer2DModel的forward函数",y)
         # import traceback
         # traceback.print_stack()
         bs, c, h, w = x.shape

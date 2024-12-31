@@ -363,6 +363,9 @@ def sampling_function(self, denoiser_params, cond_scale, cond_composition):
     return denoised, cond_pred, uncond_pred
 
 
+def refresh_lora():
+    memory_management.refresh_lora()
+
 def sampling_prepare(unet, x):
     B, C, H, W = x.shape
 

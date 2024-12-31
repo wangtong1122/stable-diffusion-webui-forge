@@ -31,7 +31,10 @@ class ExtraNetworkLora(extra_networks.ExtraNetwork):
         #遍历参数列表
         for params in params_list:
             assert params.items
-
+            #老的参数列表 ： ['flux-lora-000005', '0.222']
+            #老的参数列表 ： ['oneyuan3d', '0.33']
+            #
+            print("老的参数列表 ：",params.positional)
             names.append(params.positional[0])
 
             te_multiplier = float(params.positional[1]) if len(params.positional) > 1 else 1.0

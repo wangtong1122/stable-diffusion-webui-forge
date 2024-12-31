@@ -963,6 +963,8 @@ def process_images_inner(p: StableDiffusionProcessing) -> Processed:
 
             if not p.disable_extra_networks:#是否禁用额外网络,激活额外网络
                 extra_networks.activate(p, p.extra_network_data)
+                #如果是Switch模式，这里只激活第一个网络
+
 
             p.sd_model.forge_objects = p.sd_model.forge_objects_after_applying_lora.shallow_copy()
 
@@ -1349,7 +1351,7 @@ class StableDiffusionProcessingTxt2Img(StableDiffusionProcessing):
             if self.hr_upscaler is not None:
                 self.extra_generation_params["Hires upscaler"] = self.hr_upscaler
 
-    #在哪里调用了这个采样函数呢？
+    #在哪里调用了这个采样函数呢？ process_images_inner,开始根据steps进行多次采样
     def sample(self, conditioning, unconditional_conditioning, seeds, subseeds, subseed_strength, prompts):
         self.sampler = sd_samplers.create_sampler(self.sampler_name, self.sd_model)
         #samplers_k_diffusion中的Euler sampler_name = 'Euler' sampler_name是在界面上选择的采样器

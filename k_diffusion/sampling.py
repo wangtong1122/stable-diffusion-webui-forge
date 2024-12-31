@@ -120,7 +120,9 @@ def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None,
     """Implements Algorithm 2 (Euler steps) from Karras et al. (2022)."""
     extra_args = {} if extra_args is None else extra_args
     s_in = x.new_ones([x.shape[0]])
+    #sigmas = steps - 1
     for i in trange(len(sigmas) - 1, disable=disable):
+        # print("我的sample_euler函数:",i)
         gamma = min(s_churn / (len(sigmas) - 1), 2 ** 0.5 - 1) if s_tmin <= sigmas[i] <= s_tmax else 0.
         eps = torch.randn_like(x) * s_noise
         sigma_hat = sigmas[i] * (gamma + 1)
@@ -128,7 +130,7 @@ def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None,
             x = x + eps * (sigma_hat ** 2 - sigmas[i] ** 2) ** 0.5
         #调用模型的forward函数，进行噪声去除 调用flux的forward函数
         #def forward(self, x, timestep, context, y, guidance=None, **kwargs):
-        print(f"模型的采样：model= {model} ex = {extra_args}")
+        # print(f"模型的采样：model= {model} ex = {extra_args}")
         #model= CFGDenoiserKDiffusion
         #ex = {'cond': <modules.prompt_parser.MulticondLearnedConditioning object at 0x7f64381e1840>, 'image_cond','uncond': None, 'cond_scale': 1, 's_min_uncond': 0.0
         #在加了负向提示词后 'uncond': [[ScheduledPromptConditioning(end_at_step=1, cond={'crossattn':

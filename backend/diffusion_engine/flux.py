@@ -46,7 +46,7 @@ class Flux(ForgeDiffusionEngine):
             )
             self.use_distilled_cfg_scale = True
         #FluxTransformer2DModel
-        print("Flux的",huggingface_components['transformer'])
+        # print("Flux的",huggingface_components['transformer'])
         unet = UnetPatcher.from_model(
             model=huggingface_components['transformer'],
             diffusers_scheduler=None,

@@ -611,6 +611,10 @@ def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_mem
 
     return int(max(0, suggestion))
 
+def refresh_lora():
+    for model in current_loaded_models:
+        model.model.refresh_loras()
+
 #加载模型和Lora到GPU
 def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
     global vram_state
@@ -621,8 +625,13 @@ def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
 
     models_to_load = []
     models_already_loaded = []
+    print(f"[Memory Management] Loading {len(models)} model(s) to GPU ... ", end="")
+    #[Memory Management] Loading 1 model(s)
+
     for x in models:
         loaded_model = LoadedModel(x)
+        #通过loaded_model可以刷新Lora
+        #设置Lora的权重生效
 
         if loaded_model in current_loaded_models:
             index = current_loaded_models.index(loaded_model)
