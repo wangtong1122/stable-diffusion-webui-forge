@@ -209,12 +209,12 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         switch_step = 5
         #获取self.model_wrap.inner_model.forge_objects.unet.lora_patches对象键值对的个数
         lora_num = len(self.model_wrap.inner_model.forge_objects.unet.lora_patches)
-        print(f"----lora的总数 {lora_num}------")
+        # print(f"----lora的总数 {lora_num}------")
         if lora_num <=1:
-            print("-------lora的总数小于1，不进行权重切换------")
+            # print("-------lora的总数小于1，不进行权重切换------")
             return False
         keys_list = list(self.model_wrap.inner_model.forge_objects.unet.lora_patches.keys())
-        if step > 0 and step % switch_step == 0:
+        if step >= 0 and step % switch_step == 0:
             self.cur_activate_index = (self.cur_activate_index + 1) % lora_num
             print(f"当前激活的lora索引 {self.cur_activate_index},当前激活的lora {keys_list[self.cur_activate_index]}")
             # print(f"设置lora{lora}权重")
@@ -230,7 +230,6 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
                     for al in allLoraPatch:
                         allLoraPatch[al][0][0] = 0
                     # print(f"apk0 {allLoraPatch[apk[0]][0][0]}")
-            print("设置refresh")
             refresh_lora()
                 # else:
                 #
@@ -245,7 +244,9 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         #调用父类的callback_state方法
         #设置新的lora权重
         step = state['i']
-        self.use_switch_lora_method(step)
+        if  shared.opts.forge_lora_merge_type == 'switch':
+            # print("Lora合并类型为Switch")
+            self.use_switch_lora_method(step)
         # print(f"KDiffusionSampler Sampling step {step}")
         super().callback_state(state)
     #实际调用了采用器的函数在processing中 这里的conditioning和unconditional_conditioning是什么?
@@ -253,6 +254,9 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         # 模型中的 self.forge_objects = ForgeObjects(unet=unet, clip=clip, vae=vae, clipvision=None)
         #这一步中进行模型权重合并 后续可以通过 refresh_lora() 进行Lora的重新合并
+        if  shared.opts.forge_lora_merge_type == 'switch':
+            print("Lora合并类型为Switch，初始switch权重设置")
+            self.use_switch_lora_method(0)
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
         steps = steps or p.steps

@@ -20,6 +20,7 @@ ui_clip_skip: gr.Slider = None
 ui_forge_unet_storage_dtype_options: gr.Radio = None
 ui_forge_async_loading: gr.Radio = None
 ui_forge_pin_shared_memory: gr.Radio = None
+ui_forge_lora_merge_type: gr.Radio = None
 ui_forge_inference_memory: gr.Slider = None
 
 
@@ -54,7 +55,7 @@ def bind_to_opts(comp, k, save=False, callback=None):
 
 
 def make_checkpoint_manager_ui():
-    global ui_checkpoint, ui_vae, ui_clip_skip, ui_forge_unet_storage_dtype_options, ui_forge_async_loading, ui_forge_pin_shared_memory, ui_forge_inference_memory, ui_forge_preset
+    global ui_checkpoint, ui_vae, ui_clip_skip, ui_forge_unet_storage_dtype_options, ui_forge_async_loading, ui_forge_pin_shared_memory, ui_forge_lora_merge_type,ui_forge_inference_memory, ui_forge_preset
 
     if shared.opts.sd_model_checkpoint in [None, 'None', 'none', '']:
         if len(sd_models.checkpoints_list) == 0:
@@ -114,14 +115,15 @@ def make_checkpoint_manager_ui():
 
     ui_forge_async_loading = gr.Radio(label="Swap Method", value=lambda: shared.opts.forge_async_loading, choices=['Queue', 'Async'])
     ui_forge_pin_shared_memory = gr.Radio(label="Swap Location", value=lambda: shared.opts.forge_pin_shared_memory, choices=['CPU', 'Shared'])
+    ui_forge_lora_merge_type = gr.Radio(label = "Lora合并方法",value = lambda :shared.opts.forge_lora_merge_type,choices=['merge','switch','composite'])
     ui_forge_inference_memory = gr.Slider(label="GPU Weights (MB)", value=lambda: total_vram - shared.opts.forge_inference_memory, minimum=0, maximum=int(memory_management.total_vram), step=1)
 
-    mem_comps = [ui_forge_inference_memory, ui_forge_async_loading, ui_forge_pin_shared_memory]
+    mem_comps = [ui_forge_inference_memory, ui_forge_async_loading, ui_forge_pin_shared_memory,ui_forge_lora_merge_type]
 
     ui_forge_inference_memory.change(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
     ui_forge_async_loading.change(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
     ui_forge_pin_shared_memory.change(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
-
+    ui_forge_lora_merge_type.change(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False,show_progress=False)
     Context.root_block.load(ui_refresh_memory_management_settings, inputs=mem_comps, queue=False, show_progress=False)
 
     ui_clip_skip = gr.Slider(label="Clip skip", value=lambda: shared.opts.CLIP_stop_at_last_layers, **{"minimum": 1, "maximum": 12, "step": 1})
@@ -171,20 +173,21 @@ def refresh_models():
     return ckpt_list, module_list.keys()
 
 
-def ui_refresh_memory_management_settings(model_memory, async_loading, pin_shared_memory):
+def ui_refresh_memory_management_settings(model_memory, async_loading, pin_shared_memory,lora_merge_type):
     """ Passes precalculated 'model_memory' from "GPU Weights" UI slider (skip redundant calculation) """
     refresh_memory_management_settings(
         async_loading=async_loading,
         pin_shared_memory=pin_shared_memory,
-        model_memory=model_memory  # Use model_memory directly from UI slider value
+        model_memory=model_memory,  # Use model_memory directly from UI slider value
+        lora_merge_type=lora_merge_type
     )
 
-def refresh_memory_management_settings(async_loading=None, inference_memory=None, pin_shared_memory=None, model_memory=None):
+def refresh_memory_management_settings(async_loading=None, inference_memory=None, pin_shared_memory=None, model_memory=None,lora_merge_type = None):
     # Fallback to defaults if values are not passed
     async_loading = async_loading if async_loading is not None else shared.opts.forge_async_loading
     inference_memory = inference_memory if inference_memory is not None else shared.opts.forge_inference_memory
     pin_shared_memory = pin_shared_memory if pin_shared_memory is not None else shared.opts.forge_pin_shared_memory
-
+    lora_merge_type = lora_merge_type if lora_merge_type is not None else shared.opts.forge_lora_merge_type
     # If model_memory is provided, calculate inference memory accordingly, otherwise use inference_memory directly
     if model_memory is None:
         model_memory = total_vram - inference_memory
@@ -194,7 +197,7 @@ def refresh_memory_management_settings(async_loading=None, inference_memory=None
     shared.opts.set('forge_async_loading', async_loading)
     shared.opts.set('forge_inference_memory', inference_memory)
     shared.opts.set('forge_pin_shared_memory', pin_shared_memory)
-
+    shared.opts.set('forge_lora_merge_type',lora_merge_type)
     stream.stream_activated = async_loading == 'Async'
     memory_management.current_inference_memory = inference_memory * 1024 * 1024  # Convert MB to bytes
     memory_management.PIN_SHARED_MEMORY = pin_shared_memory == 'Shared'
@@ -202,7 +205,8 @@ def refresh_memory_management_settings(async_loading=None, inference_memory=None
     log_dict = dict(
         stream=stream.should_use_stream(),
         inference_memory=memory_management.minimum_inference_memory() / (1024 * 1024),
-        pin_shared_memory=memory_management.PIN_SHARED_MEMORY
+        pin_shared_memory=memory_management.PIN_SHARED_MEMORY,
+        lora_merge_type = lora_merge_type
     )
 
     print(f'Environment vars changed: {log_dict}')
@@ -315,6 +319,7 @@ def forge_main_entry():
         ui_forge_unet_storage_dtype_options,
         ui_forge_async_loading,
         ui_forge_pin_shared_memory,
+        ui_forge_lora_merge_type,
         ui_forge_inference_memory,
         ui_txt2img_width,
         ui_img2img_width,
@@ -351,7 +356,8 @@ def on_preset_change(preset=None):
             gr.update(visible=True, value=1),                                           # ui_clip_skip
             gr.update(visible=False, value='Automatic'),                                # ui_forge_unet_storage_dtype_options
             gr.update(visible=False, value='Queue'),                                    # ui_forge_async_loading
-            gr.update(visible=False, value='CPU'),                                      # ui_forge_pin_shared_memory
+            gr.update(visible=False, value='CPU'),# ui_forge_pin_shared_memory
+            gr.update(visible=True, value='merge'),#ui_forge_merge_lora_type
             gr.update(visible=False, value=total_vram - 1024),                          # ui_forge_inference_memory
             gr.update(value=getattr(shared.opts, "sd_t2i_width", 512)),                 # ui_txt2img_width
             gr.update(value=getattr(shared.opts, "sd_i2i_width", 512)),                 # ui_img2img_width
@@ -378,7 +384,8 @@ def on_preset_change(preset=None):
             gr.update(visible=False, value=1),                                          # ui_clip_skip
             gr.update(visible=True, value='Automatic'),                                 # ui_forge_unet_storage_dtype_options
             gr.update(visible=False, value='Queue'),                                    # ui_forge_async_loading
-            gr.update(visible=False, value='CPU'),                                      # ui_forge_pin_shared_memory
+            gr.update(visible=False, value='CPU'),# ui_forge_pin_shared_memory
+            gr.update(visible=True, value='merge'),# ui_forge_merge_lora_type
             gr.update(visible=True, value=model_mem),                                   # ui_forge_inference_memory
             gr.update(value=getattr(shared.opts, "xl_t2i_width", 896)),                 # ui_txt2img_width
             gr.update(value=getattr(shared.opts, "xl_i2i_width", 1024)),                # ui_img2img_width
@@ -406,6 +413,7 @@ def on_preset_change(preset=None):
             gr.update(visible=True, value='Automatic'),                                 # ui_forge_unet_storage_dtype_options
             gr.update(visible=True, value='Queue'),                                     # ui_forge_async_loading
             gr.update(visible=True, value='CPU'),                                       # ui_forge_pin_shared_memory
+            gr.update(visible=True, value='merge'),                                     # ui_forge_merge_lora_type
             gr.update(visible=True, value=model_mem),                                   # ui_forge_inference_memory
             gr.update(value=getattr(shared.opts, "flux_t2i_width", 896)),               # ui_txt2img_width
             gr.update(value=getattr(shared.opts, "flux_i2i_width", 1024)),              # ui_img2img_width
@@ -432,6 +440,7 @@ def on_preset_change(preset=None):
         gr.update(visible=True, value='Automatic'),  # ui_forge_unet_storage_dtype_options
         gr.update(visible=True, value='Queue'),  # ui_forge_async_loading
         gr.update(visible=True, value='CPU'),  # ui_forge_pin_shared_memory
+        gr.update(visible=True, value='merge'),  # ui_forge_lora_merge_type
         gr.update(visible=True, value=total_vram - 1024),  # ui_forge_inference_memory
         gr.update(value=ui_settings_from_file['txt2img/Width/value']),  # ui_txt2img_width
         gr.update(value=ui_settings_from_file['img2img/Width/value']),  # ui_img2img_width

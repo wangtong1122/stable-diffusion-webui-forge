@@ -222,7 +222,7 @@ def set_config(req: dict[str, Any], is_api=False, run_callbacks=True, save_confi
     should_refresh_model_loading_params = False
 
     memory_changes = {}
-    memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory']
+    memory_keys = ['forge_inference_memory', 'forge_async_loading', 'forge_pin_shared_memory','forge_lora_merge_type']
 
     for k, v in req.items():
         # ignore unchanged options

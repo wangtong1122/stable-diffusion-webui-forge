@@ -308,23 +308,24 @@ class LoraLoader:
         self.backup = {}
         self.online_backup = []
         self.loaded_hash = str([])
-        self.need_reload_lora = False
-        self.isValidRefash = False
+        self.lora_reloaded = False
     def reload_lora(self):
-        if not self.isValidRefash:
+        from modules import shared
+        if not shared.opts.forge_lora_merge_type ==  'switch':
+            print("Lora的合并为merge，不进行刷新")
             return
-        self.need_reload_lora = False
+        self.lora_reloaded = False
 
     @torch.inference_mode()
     def refresh(self, lora_patches, offload_device=torch.device('cpu')):
         print("刷新LoRA refresh")
         hashes = str(list(lora_patches.keys()))
-        print(f"{self.loaded_hash},{self.need_reload_lora}")
+        print(f"{self.loaded_hash},{self.lora_reloaded}")
         #这里是为了避免重复加载 这里需要优化，确保可以加载并且不会重复加载
 
-        if (hashes == self.loaded_hash) & self.need_reload_lora:
+        if (hashes == self.loaded_hash) & self.lora_reloaded:
             return
-        self.need_reload_lora = True
+        self.lora_reloaded = True
 
         # Merge Patches
 

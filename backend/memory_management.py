@@ -517,6 +517,7 @@ class LoadedModel:
 
         #将Lora合并到模型中
         self.model.refresh_loras()
+        print("首次进行lora合并 refresh_loras")
 
         if is_intel_xpu() and not args.disable_ipex_hijack:
             self.real_model = torch.xpu.optimize(self.real_model.eval(), inplace=True, auto_kernel_selection=True, graph_mode=True)
