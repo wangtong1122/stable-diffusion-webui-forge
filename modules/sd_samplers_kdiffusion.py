@@ -79,7 +79,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
 
         self.options = options or {}
         self.func = funcname if callable(funcname) else getattr(k_diffusion.sampling, self.funcname)
-
+        self.cur_activate_index = 0
         self.model_wrap_cfg = CFGDenoiserKDiffusion(self)
         #self.model_wrap 就是 shared.sd_model
         self.model_wrap = self.model_wrap_cfg.inner_model
@@ -200,18 +200,53 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         return samples
 
     #覆写callback_state方法
+    #定义一个全局变量，存储当前激活的lora索引
 
-    def use_switch_lora_method(self):
-        print(f"测试的以上: {self.model_wrap_cfg.inner_model}")
-        # refresh_lora()
+    def use_switch_lora_method(self,step):
+        # print(f"测试的以上: {self.model_wrap.inner_model.forge_objects.unet.lora_patches}")
+        # lora_identifier = (filename, strength_patch, strength_model, online_mode)
+        #如何获取所有的已经激活的lora列表，并设置其strength?
+        switch_step = 5
+        #获取self.model_wrap.inner_model.forge_objects.unet.lora_patches对象键值对的个数
+        lora_num = len(self.model_wrap.inner_model.forge_objects.unet.lora_patches)
+        print(f"----lora的总数 {lora_num}------")
+        if lora_num <=1:
+            print("-------lora的总数小于1，不进行权重切换------")
+            return False
+        keys_list = list(self.model_wrap.inner_model.forge_objects.unet.lora_patches.keys())
+        if step > 0 and step % switch_step == 0:
+            self.cur_activate_index = (self.cur_activate_index + 1) % lora_num
+            print(f"当前激活的lora索引 {self.cur_activate_index},当前激活的lora {keys_list[self.cur_activate_index]}")
+            # print(f"设置lora{lora}权重")
+            # 设置当前激活的lora的权重
+            for patch in  self.model_wrap.inner_model.forge_objects.unet.lora_patches:
+                if patch == keys_list[self.cur_activate_index]:
+                    # print(f"哈哈哈 {len(self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch])}")
+                    allLoraPatch  = self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch]
+                    for al in allLoraPatch:
+                        allLoraPatch[al][0][0] = 1.0
+                else:
+                    allLoraPatch = self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch]
+                    for al in allLoraPatch:
+                        allLoraPatch[al][0][0] = 0
+                    # print(f"apk0 {allLoraPatch[apk[0]][0][0]}")
+            print("设置refresh")
+            refresh_lora()
+                # else:
+                #
+                #     # self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch].strength_patch = 0.0
+
+            # print(f"搜索到的{ self.model_wrap.inner_model.forge_objects.unet.lora_patches[lora]}")
+            # print(f"搜索到的{ self.model_wrap.inner_model.forge_objects.unet.lora_patches[lora].strength_patch}")
+
         return True
 
     def callback_state(self, state):
         #调用父类的callback_state方法
         #设置新的lora权重
-        self.use_switch_lora_method()
         step = state['i']
-        print(f"KDiffusionSampler Sampling step {step}")
+        self.use_switch_lora_method(step)
+        # print(f"KDiffusionSampler Sampling step {step}")
         super().callback_state(state)
     #实际调用了采用器的函数在processing中 这里的conditioning和unconditional_conditioning是什么?
     def sample(self, p, x, conditioning, unconditional_conditioning, steps=None, image_conditioning=None):

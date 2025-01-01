@@ -115,6 +115,7 @@ class ModelPatcher:
                 this_patches[key] = current_patches
 
         self.lora_patches[lora_identifier] = this_patches
+        print(f"搜索的{lora_identifier}")
         return p
 
     def has_online_lora(self):
@@ -123,7 +124,9 @@ class ModelPatcher:
                 return True
         return False
     #关键这里是将lora_patches合并到权重中
-    def refresh_loras(self):
+    def refresh_loras(self,is_reload_lora=False):
+        if is_reload_lora:
+            self.lora_loader.reload_lora()
         self.lora_loader.refresh(lora_patches=self.lora_patches, offload_device=self.offload_device)
         return
 

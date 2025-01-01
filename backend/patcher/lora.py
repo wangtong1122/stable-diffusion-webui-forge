@@ -90,7 +90,9 @@ def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=t
         weight = weight.to(dtype=computation_dtype)
 
     for p in patches:
+        #filename, strength_patch, strength_model, online_mode
         strength = p[0]
+        # print(f"合并的强度:{strength}")
         v = p[1]
         strength_model = p[2]
         offset = p[3]
@@ -306,24 +308,36 @@ class LoraLoader:
         self.backup = {}
         self.online_backup = []
         self.loaded_hash = str([])
+        self.need_reload_lora = False
+        self.isValidRefash = False
+    def reload_lora(self):
+        if not self.isValidRefash:
+            return
+        self.need_reload_lora = False
 
     @torch.inference_mode()
     def refresh(self, lora_patches, offload_device=torch.device('cpu')):
+        # print("刷新LoRA")
         hashes = str(list(lora_patches.keys()))
+        print(f"{self.loaded_hash},{self.need_reload_lora}")
+        #这里是为了避免重复加载 这里需要优化，确保可以加载并且不会重复加载
 
-        if hashes == self.loaded_hash:
+        if (hashes == self.loaded_hash) & self.need_reload_lora:
             return
+        self.need_reload_lora = True
 
         # Merge Patches
 
         all_patches = {}
 
         for (_, _, _, online_mode), patches in lora_patches.items():
+            # print("合并LoRA1")
             for key, current_patches in patches.items():
+                # print("合并LoRA2")
                 all_patches[(key, online_mode)] = all_patches.get((key, online_mode), []) + current_patches
 
         # Initialize
-
+        print("重新写入 all_patches")
         memory_management.signal_empty_cache = True
 
         parameter_devices = get_parameter_devices(self.model)

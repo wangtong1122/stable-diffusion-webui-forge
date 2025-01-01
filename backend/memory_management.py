@@ -613,7 +613,7 @@ def compute_model_gpu_memory_when_using_cpu_swap(current_free_mem, inference_mem
 
 def refresh_lora():
     for model in current_loaded_models:
-        model.model.refresh_loras()
+        model.model.refresh_loras(is_reload_lora=True)
 
 #加载模型和Lora到GPU
 def load_models_gpu(models, memory_required=0, hard_memory_preservation=0):
