@@ -80,7 +80,7 @@ def weight_decompose(dora_scale, weight, lora_diff, alpha, strength, computation
 @torch.inference_mode()
 def merge_lora_to_weight(patches, weight, key="online_lora", computation_dtype=torch.float32):
     # Modified from https://github.com/comfyanonymous/ComfyUI/blob/39f114c44bb99d4a221e8da451d4f2a20119c674/comfy/model_patcher.py#L446
-
+    # print("lora的merge_lora_to_weight")
     weight_dtype_backup = None
 
     if computation_dtype == weight.dtype:
@@ -317,7 +317,7 @@ class LoraLoader:
 
     @torch.inference_mode()
     def refresh(self, lora_patches, offload_device=torch.device('cpu')):
-        # print("刷新LoRA")
+        print("刷新LoRA refresh")
         hashes = str(list(lora_patches.keys()))
         print(f"{self.loaded_hash},{self.need_reload_lora}")
         #这里是为了避免重复加载 这里需要优化，确保可以加载并且不会重复加载
