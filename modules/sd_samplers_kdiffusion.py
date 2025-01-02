@@ -224,11 +224,11 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
                     # print(f"哈哈哈 {len(self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch])}")
                     allLoraPatch  = self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch]
                     for al in allLoraPatch:
-                        allLoraPatch[al][0][0] = 1.0
+                        allLoraPatch[al][0][0] = 0.8
                 else:
                     allLoraPatch = self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch]
                     for al in allLoraPatch:
-                        allLoraPatch[al][0][0] = 0
+                        allLoraPatch[al][0][0] = 0.2
                     # print(f"apk0 {allLoraPatch[apk[0]][0][0]}")
             refresh_lora()
                 # else:
