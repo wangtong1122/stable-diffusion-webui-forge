@@ -134,7 +134,7 @@ def sample_euler(model, x, sigmas, extra_args=None, callback=None, disable=None,
         #model= CFGDenoiserKDiffusion
         #ex = {'cond': <modules.prompt_parser.MulticondLearnedConditioning object at 0x7f64381e1840>, 'image_cond','uncond': None, 'cond_scale': 1, 's_min_uncond': 0.0
         #在加了负向提示词后 'uncond': [[ScheduledPromptConditioning(end_at_step=1, cond={'crossattn':
-        denoised = model(x, sigma_hat * s_in, **extra_args)
+        denoised = model(x, sigma_hat * s_in, **extra_args) #调用CFGDenoiserKDiffusion的前向传播
         d = to_d(x, sigma_hat, denoised)
         if callback is not None:
             callback({'x': x, 'i': i, 'sigma': sigmas[i], 'sigma_hat': sigma_hat, 'denoised': denoised})
