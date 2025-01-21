@@ -206,7 +206,8 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         # print(f"测试的以上: {self.model_wrap.inner_model.forge_objects.unet.lora_patches}")
         # lora_identifier = (filename, strength_patch, strength_model, online_mode)
         #如何获取所有的已经激活的lora列表，并设置其strength?
-        switch_step = 5
+        # print(f"lora的合并配置{self.lora_composition_config}")
+        switch_step = self.lora_composition_config['switch_steps']
         #获取self.model_wrap.inner_model.forge_objects.unet.lora_patches对象键值对的个数
         lora_num = len(self.model_wrap.inner_model.forge_objects.unet.lora_patches)
         # print(f"----lora的总数 {lora_num}------")
@@ -216,19 +217,22 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         keys_list = list(self.model_wrap.inner_model.forge_objects.unet.lora_patches.keys())
         if step >= 0 and step % switch_step == 0:
             self.cur_activate_index = (self.cur_activate_index + 1) % lora_num
-            print(f"当前激活的lora索引 {self.cur_activate_index},当前激活的lora {keys_list[self.cur_activate_index]}")
+            #[('/home/sunset/newspace/sdf2/stable-diffusion-webui-forge/models/Lora/【A定制】产品图标集合.safetensors', 0.66, 1.0, True), ('/home/sunset/newspace/sdf2/stable-diffusion-webui-forge/models/Lora/【A定制】彩小云LT_V1.9.safetensors', 0.4, 1.0, True)],False
+            # print(f"当前激活的lora索引 {self.cur_activate_index},当前激活的lora {keys_list[self.cur_activate_index]}")
             # print(f"设置lora{lora}权重")
             # 设置当前激活的lora的权重
             for patch in  self.model_wrap.inner_model.forge_objects.unet.lora_patches:
+                # print(f"lora patch的强度 {patch[1]}")
+                # ('/home/sunset/newspace/sdf2/stable-diffusion-webui-forge/models/Lora/【A定制】彩小云LT_V1.9.safetensors', 0.45, 1.0, True)
                 if patch == keys_list[self.cur_activate_index]:
                     # print(f"哈哈哈 {len(self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch])}")
                     allLoraPatch  = self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch]
                     for al in allLoraPatch:
-                        allLoraPatch[al][0][0] = 0.8
+                        allLoraPatch[al][0][0] = patch[1] * self.lora_composition_config['activate_lora_strength'] # lora设置的权重，乘以lora激活时的权重
                 else:
                     allLoraPatch = self.model_wrap.inner_model.forge_objects.unet.lora_patches[patch]
                     for al in allLoraPatch:
-                        allLoraPatch[al][0][0] = 0.2
+                        allLoraPatch[al][0][0] =  patch[1] * self.lora_composition_config['no_activate_lora_strength']
                     # print(f"apk0 {allLoraPatch[apk[0]][0][0]}")
             refresh_lora()
                 # else:
@@ -244,7 +248,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         #调用父类的callback_state方法
         #设置新的lora权重
         step = state['i']
-        if  shared.opts.forge_lora_merge_type == 'switch':
+        if  self.lora_composition_config['lora_composition_type'] == 'switch':
             # print("Lora合并类型为Switch")
             self.use_switch_lora_method(step)
         # print(f"KDiffusionSampler Sampling step {step}")
@@ -254,13 +258,18 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         unet_patcher = self.model_wrap.inner_model.forge_objects.unet
         # 模型中的 self.forge_objects = ForgeObjects(unet=unet, clip=clip, vae=vae, clipvision=None)
         #这一步中进行模型权重合并 后续可以通过 refresh_lora() 进行Lora的重新合并
-        if  shared.opts.forge_lora_merge_type == 'switch':
+        self.lora_composition_config = p.lora_composition_config
+        # print(f"KDiffusionSampler：Lora合并配置 {self.lora_composition_config} ddd {self.lora_composition_config['lora_composition_type']}")
+        if  self.lora_composition_config['lora_composition_type'] == 'switch':
             print("Lora合并类型为Switch，初始switch权重设置")
             self.use_switch_lora_method(0)
         sampling_prepare(self.model_wrap.inner_model.forge_objects.unet, x=x)
 
         steps = steps or p.steps
-        print("我是采样器",steps)
+        #p=$<modules.processing.StableDiffusionProcessingTxt2Img object at 0x76be8de0cb80>,x=
+        #K的才有的 p=${'text': '问的', 'button': '发送文本', 'animal': 'cat'}
+        # print(f"K的才有的 p=${p.lora_composition}")
+        # print("我是采样器",steps)
         sigmas = self.get_sigmas(p, steps).to(x.device)
 
         if opts.sgm_noise_multiplier:
@@ -298,7 +307,7 @@ class KDiffusionSampler(sd_samplers_common.Sampler):
         }
         print("我是采样器", self.funcname)
         #启动采样 extra_params_kwargs['n'] = steps
-        print(f"KDiffusionSampler：len(sigmas) = {len(sigmas)}, steps = {steps}")
+        # print(f"KDiffusionSampler：len(sigmas) = {len(sigmas)}, steps = {steps}")
         #KDiffusionSampler：len(sigmas) = 6, steps = 5
         samples = self.launch_sampling(steps, lambda: self.func(self.model_wrap_cfg, x, extra_args=self.sampler_extra_args, disable=False, callback=self.callback_state, **extra_params_kwargs))
 
