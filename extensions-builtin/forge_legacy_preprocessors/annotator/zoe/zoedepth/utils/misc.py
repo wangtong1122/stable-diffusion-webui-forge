@@ -251,8 +251,8 @@ def compute_metrics(gt, pred, interpolate=True, garg_crop=False, eigen_crop=True
 def parallelize(config, model, find_unused_parameters=True):
 
     if config.gpu is not None:
-        torch.cuda.set_device(config.gpu)
-        model = model.cuda(config.gpu)
+        torch.npu.set_device(config.gpu)
+        model = model.npu(config.gpu)
 
     config.multigpu = False
     if config.distributed:
@@ -267,16 +267,16 @@ def parallelize(config, model, find_unused_parameters=True):
             (config.num_workers + config.ngpus_per_node - 1) / config.ngpus_per_node)
         print("Device", config.gpu, "Rank",  config.rank, "batch size",
               config.batch_size, "Workers", config.workers)
-        torch.cuda.set_device(config.gpu)
+        torch.npu.set_device(config.gpu)
         model = nn.SyncBatchNorm.convert_sync_batchnorm(model)
-        model = model.cuda(config.gpu)
+        model = model.npu(config.gpu)
         model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[config.gpu], output_device=config.gpu,
                                                           find_unused_parameters=find_unused_parameters)
 
     elif config.gpu is None:
         # Use DP
         config.multigpu = True
-        model = model.cuda()
+        model = model.npu()
         model = torch.nn.DataParallel(model)
 
     return model

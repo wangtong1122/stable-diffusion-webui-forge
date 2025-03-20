@@ -15,8 +15,8 @@ from . import util
 class Hand(object):
     def __init__(self, model_path):
         self.model = handpose_model()
-        # if torch.cuda.is_available():
-        #     self.model = self.model.cuda()
+        # if torch.npu.is_available():
+        #     self.model = self.model.npu()
             # print('cuda')
         model_dict = util.transfer(self.model, torch.load(model_path))
         self.model.load_state_dict(model_dict)
@@ -47,8 +47,8 @@ class Hand(object):
             im = np.ascontiguousarray(im)
 
             data = torch.from_numpy(im).float()
-            if torch.cuda.is_available():
-                data = data.cuda()
+            if torch.npu.is_available():
+                data = data.npu()
 
             with torch.no_grad():
                 data = data.to(self.cn_device)

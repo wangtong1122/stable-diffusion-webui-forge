@@ -20,8 +20,8 @@ def scatter(input, devices, streams=None):
         # TODO: copy to a pinned buffer first (if copying from CPU)
         stream = streams[0] if output.numel() > 0 else None
         if devices != [-1]:
-            with torch.cuda.device(devices[0]), torch.cuda.stream(stream):
-                output = output.cuda(devices[0], non_blocking=True)
+            with torch.npu.device(devices[0]), torch.npu.stream(stream):
+                output = output.npu(devices[0], non_blocking=True)
         else:
             # unsqueeze the first dimension thus the tensor's shape is the
             # same as those scattered with GPU.
@@ -40,8 +40,8 @@ def synchronize_stream(output, devices, streams):
                                    [streams[i]])
     elif isinstance(output, torch.Tensor):
         if output.numel() != 0:
-            with torch.cuda.device(devices[0]):
-                main_stream = torch.cuda.current_stream()
+            with torch.npu.device(devices[0]):
+                main_stream = torch.npu.current_stream()
                 main_stream.wait_stream(streams[0])
                 output.record_stream(main_stream)
     else:

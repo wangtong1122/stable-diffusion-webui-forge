@@ -429,18 +429,18 @@ class CSVLogger:
 def tf32_mode(cudnn=None, matmul=None):
     """A context manager that sets whether TF32 is allowed on cuDNN or matmul."""
     cudnn_old = torch.backends.cudnn.allow_tf32
-    matmul_old = torch.backends.cuda.matmul.allow_tf32
+    matmul_old = torch.backends.npu.matmul.allow_tf32
     try:
         if cudnn is not None:
             torch.backends.cudnn.allow_tf32 = cudnn
         if matmul is not None:
-            torch.backends.cuda.matmul.allow_tf32 = matmul
+            torch.backends.npu.matmul.allow_tf32 = matmul
         yield
     finally:
         if cudnn is not None:
             torch.backends.cudnn.allow_tf32 = cudnn_old
         if matmul is not None:
-            torch.backends.cuda.matmul.allow_tf32 = matmul_old
+            torch.backends.npu.matmul.allow_tf32 = matmul_old
 
 
 def get_safetensors_metadata(path):

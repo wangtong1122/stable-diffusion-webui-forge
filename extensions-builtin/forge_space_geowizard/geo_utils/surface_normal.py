@@ -10,14 +10,14 @@ def init_image_coor(height, width):
     x = np.tile(x_row, (height, 1))
     x = x[np.newaxis, :, :]
     x = x.astype(np.float32)
-    x = torch.from_numpy(x.copy()).cuda()
+    x = torch.from_numpy(x.copy()).npu()
     u_u0 = x - width/2.0
 
     y_col = np.arange(0, height)  # y_col = np.arange(0, height)
     y = np.tile(y_col, (width, 1)).T
     y = y[np.newaxis, :, :]
     y = y.astype(np.float32)
-    y = torch.from_numpy(y.copy()).cuda()
+    y = torch.from_numpy(y.copy()).npu()
     v_v0 = y - height/2.0
     return u_u0, v_v0
 
@@ -45,7 +45,7 @@ def get_surface_normal(xyz, patch_size=3):
     xy = x * y
     xz = x * z
     yz = y * z
-    patch_weight = torch.ones((1, 1, patch_size, patch_size), requires_grad=False).cuda()
+    patch_weight = torch.ones((1, 1, patch_size, patch_size), requires_grad=False).npu()
     xx_patch = nn.functional.conv2d(xx, weight=patch_weight, padding=int(patch_size / 2))
     yy_patch = nn.functional.conv2d(yy, weight=patch_weight, padding=int(patch_size / 2))
     zz_patch = nn.functional.conv2d(zz, weight=patch_weight, padding=int(patch_size / 2))
@@ -68,7 +68,7 @@ def get_surface_normal(xyz, patch_size=3):
     patch_num = 4
     patch_x = int(AT1.size(1) / patch_num)
     patch_y = int(AT1.size(0) / patch_num)
-    n_img = torch.randn(AT1.shape).cuda()
+    n_img = torch.randn(AT1.shape).npu()
     overlap = patch_size // 2 + 1
     for x in range(int(patch_num)):
         for y in range(int(patch_num)):

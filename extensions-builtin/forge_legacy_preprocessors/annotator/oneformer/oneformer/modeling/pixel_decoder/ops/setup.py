@@ -37,7 +37,7 @@ def get_extensions():
     define_macros = []
 
     # Force cuda since torch ask for a device, not if cuda is in fact available.
-    if (os.environ.get('FORCE_CUDA') or torch.cuda.is_available()) and CUDA_HOME is not None:
+    if (os.environ.get('FORCE_CUDA') or torch.npu.is_available()) and CUDA_HOME is not None:
         extension = CUDAExtension
         sources += source_cuda
         define_macros += [("WITH_CUDA", None)]
@@ -51,7 +51,7 @@ def get_extensions():
         if CUDA_HOME is None:
             raise NotImplementedError('CUDA_HOME is None. Please set environment variable CUDA_HOME.')
         else:
-            raise NotImplementedError('No CUDA runtime is found. Please set FORCE_CUDA=1 or test it by running torch.cuda.is_available().')
+            raise NotImplementedError('No CUDA runtime is found. Please set FORCE_CUDA=1 or test it by running torch.npu.is_available().')
 
     sources = [os.path.join(extensions_dir, s) for s in sources]
     include_dirs = [extensions_dir]

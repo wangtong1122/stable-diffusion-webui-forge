@@ -151,10 +151,10 @@ class IterBasedRunner(BaseRunner):
                 Default to 'default'.
         """
         if map_location == 'default':
-            device_id = torch.cuda.current_device()
+            device_id = torch.npu.current_device()
             checkpoint = self.load_checkpoint(
                 checkpoint,
-                map_location=lambda storage, loc: storage.cuda(device_id))
+                map_location=lambda storage, loc: storage.npu(device_id))
         else:
             checkpoint = self.load_checkpoint(
                 checkpoint, map_location=map_location)

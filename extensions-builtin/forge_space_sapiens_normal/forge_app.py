@@ -10,8 +10,8 @@ from PIL import Image
 from torchvision import transforms
 
 
-# if torch.cuda.is_available() and torch.cuda.get_device_properties(0).major >= 8:
-#     torch.backends.cuda.matmul.allow_tf32 = True
+# if torch.npu.is_available() and torch.npu.get_device_properties(0).major >= 8:
+#     torch.backends.npu.matmul.allow_tf32 = True
 #     torch.backends.cudnn.allow_tf32 = True
 
 ASSETS_DIR = os.path.join(spaces.convert_root_path(), 'assets')

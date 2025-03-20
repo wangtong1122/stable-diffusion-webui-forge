@@ -25,7 +25,7 @@ bs_search_table = [
 
 
 def find_batch_size(n_repeat, input_res):
-    total_vram = torch.cuda.mem_get_info()[1] / 1024.0**3
+    total_vram = torch.npu.mem_get_info()[1] / 1024.0**3
     
     for settings in sorted(bs_search_table, key=lambda k: (k['res'], -k['total_vram'])):
         if input_res <= settings['res'] and total_vram >= settings['total_vram']:

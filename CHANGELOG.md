@@ -873,7 +873,7 @@
  * fix --ui-debug-mode exit
  * patch GitPython to not use leaky persistent processes
  * fix duplicate Cross attention optimization after UI reload
- * torch.cuda.is_available() check for SdOptimizationXformers
+ * torch.npu.is_available() check for SdOptimizationXformers
  * fix hires fix using wrong conds in second pass if using Loras.
  * handle exception when parsing generation parameters from png info
  * fix upcast attention dtype error

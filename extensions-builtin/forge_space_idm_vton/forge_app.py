@@ -190,7 +190,7 @@ def start_tryon(dict, garm_img, garment_des, is_checked, is_checked_crop, denois
 
     with torch.no_grad():
         # Extract the images
-        with torch.cuda.amp.autocast():
+        with torch.npu.amp.autocast():
             with torch.no_grad():
                 prompt = "model is wearing " + garment_des
                 negative_prompt = "monochrome, lowres, bad anatomy, worst quality, low quality"

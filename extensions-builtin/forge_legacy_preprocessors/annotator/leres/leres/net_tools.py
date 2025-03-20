@@ -40,8 +40,8 @@ def load_ckpt(args, depth_model, shift_model, focal_model):
         depth_model.load_state_dict(strip_prefix_if_present(checkpoint['depth_model'], "module."),
                                     strict=True)
         del checkpoint
-        if torch.cuda.is_available():
-            torch.cuda.empty_cache()
+        if torch.npu.is_available():
+            torch.npu.empty_cache()
 
 
 def strip_prefix_if_present(state_dict, prefix):

@@ -23,7 +23,7 @@ from functions.ms_deform_attn_func import MSDeformAttnFunction, ms_deform_attn_c
 
 N, M, D = 1, 2, 2
 Lq, L, P = 2, 2, 2
-shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).cuda()
+shapes = torch.as_tensor([(6, 4), (3, 2)], dtype=torch.long).npu()
 level_start_index = torch.cat((shapes.new_zeros((1, )), shapes.prod(1).cumsum(0)[:-1]))
 S = sum([(H*W).item() for H, W in shapes])
 
@@ -33,9 +33,9 @@ torch.manual_seed(3)
 
 @torch.no_grad()
 def check_forward_equal_with_pytorch_double():
-    value = torch.rand(N, S, M, D).cuda() * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()
-    attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
+    value = torch.rand(N, S, M, D).npu() * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2).npu()
+    attention_weights = torch.rand(N, Lq, M, L, P).npu() + 1e-5
     attention_weights /= attention_weights.sum(-1, keepdim=True).sum(-2, keepdim=True)
     im2col_step = 2
     output_pytorch = ms_deform_attn_core_pytorch(value.double(), shapes, sampling_locations.double(), attention_weights.double()).detach().cpu()
@@ -49,9 +49,9 @@ def check_forward_equal_with_pytorch_double():
 
 @torch.no_grad()
 def check_forward_equal_with_pytorch_float():
-    value = torch.rand(N, S, M, D).cuda() * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()
-    attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
+    value = torch.rand(N, S, M, D).npu() * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2).npu()
+    attention_weights = torch.rand(N, Lq, M, L, P).npu() + 1e-5
     attention_weights /= attention_weights.sum(-1, keepdim=True).sum(-2, keepdim=True)
     im2col_step = 2
     output_pytorch = ms_deform_attn_core_pytorch(value, shapes, sampling_locations, attention_weights).detach().cpu()
@@ -65,9 +65,9 @@ def check_forward_equal_with_pytorch_float():
 
 def check_gradient_numerical(channels=4, grad_value=True, grad_sampling_loc=True, grad_attn_weight=True):
 
-    value = torch.rand(N, S, M, channels).cuda() * 0.01
-    sampling_locations = torch.rand(N, Lq, M, L, P, 2).cuda()
-    attention_weights = torch.rand(N, Lq, M, L, P).cuda() + 1e-5
+    value = torch.rand(N, S, M, channels).npu() * 0.01
+    sampling_locations = torch.rand(N, Lq, M, L, P, 2).npu()
+    attention_weights = torch.rand(N, Lq, M, L, P).npu() + 1e-5
     attention_weights /= attention_weights.sum(-1, keepdim=True).sum(-2, keepdim=True)
     im2col_step = 2
     func = MSDeformAttnFunction.apply

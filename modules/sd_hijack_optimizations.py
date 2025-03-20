@@ -54,7 +54,7 @@
 #     priority = 100
 #
 #     def is_available(self):
-#         return shared.cmd_opts.force_enable_xformers or (shared.xformers_available and torch.cuda.is_available() and (6, 0) <= torch.cuda.get_device_capability(shared.device) <= (9, 0))
+#         return shared.cmd_opts.force_enable_xformers or (shared.xformers_available and torch.npu.is_available() and (6, 0) <= torch.npu.get_device_capability(shared.device) <= (9, 0))
 #
 #     def apply(self):
 #         ldm.modules.attention.CrossAttention.forward = xformers_attention_forward
@@ -124,7 +124,7 @@
 #
 #     @property
 #     def priority(self):
-#         return 1000 if shared.device.type != 'mps' and not torch.cuda.is_available() else 10
+#         return 1000 if shared.device.type != 'mps' and not torch.npu.is_available() else 10
 #
 #     def apply(self):
 #         ldm.modules.attention.CrossAttention.forward = split_cross_attention_forward_invokeAI
@@ -165,10 +165,10 @@
 #
 # def get_available_vram():
 #     if shared.device.type == 'cuda':
-#         stats = torch.cuda.memory_stats(shared.device)
+#         stats = torch.npu.memory_stats(shared.device)
 #         mem_active = stats['active_bytes.all.current']
 #         mem_reserved = stats['reserved_bytes.all.current']
-#         mem_free_cuda, _ = torch.cuda.mem_get_info(torch.cuda.current_device())
+#         mem_free_cuda, _ = torch.npu.mem_get_info(torch.npu.current_device())
 #         mem_free_torch = mem_reserved - mem_active
 #         mem_free_total = mem_free_cuda + mem_free_torch
 #         return mem_free_total
@@ -335,10 +335,10 @@
 #
 #
 # def einsum_op_cuda(q, k, v):
-#     stats = torch.cuda.memory_stats(q.device)
+#     stats = torch.npu.memory_stats(q.device)
 #     mem_active = stats['active_bytes.all.current']
 #     mem_reserved = stats['reserved_bytes.all.current']
-#     mem_free_cuda, _ = torch.cuda.mem_get_info(q.device)
+#     mem_free_cuda, _ = torch.npu.mem_get_info(q.device)
 #     mem_free_torch = mem_reserved - mem_active
 #     mem_free_total = mem_free_cuda + mem_free_torch
 #     # Divide factor of safety as there's copying and fragmentation
@@ -547,7 +547,7 @@
 #
 #
 # def scaled_dot_product_no_mem_attention_forward(self, x, context=None, mask=None, **kwargs):
-#     with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=False):
+#     with torch.backends.npu.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=False):
 #         return scaled_dot_product_attention_forward(self, x, context, mask)
 #
 #
@@ -656,7 +656,7 @@
 #
 #
 # def sdp_no_mem_attnblock_forward(self, x):
-#     with torch.backends.cuda.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=False):
+#     with torch.backends.npu.sdp_kernel(enable_flash=True, enable_math=True, enable_mem_efficient=False):
 #         return sdp_attnblock_forward(self, x)
 #
 #

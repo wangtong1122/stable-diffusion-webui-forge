@@ -432,7 +432,7 @@ def prepare_environment():
 
     if args.use_ipex:
         args.skip_torch_cuda_test = True
-    if not args.skip_torch_cuda_test and not check_run_python("import torch; assert torch.cuda.is_available()"):
+    if not args.skip_torch_cuda_test and not check_run_python("import torch; assert torch.npu.is_available()"):
         raise RuntimeError(
             'Your device does not support the current version of Torch/CUDA! Consider download another version: \n'
             'https://github.com/lllyasviel/stable-diffusion-webui-forge/releases/tag/latest'

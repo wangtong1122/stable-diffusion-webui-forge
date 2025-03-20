@@ -40,8 +40,8 @@ class Body(object):
             im = np.ascontiguousarray(im)
 
             data = torch.from_numpy(im).float()
-            if torch.cuda.is_available():
-                data = data.cuda()
+            if torch.npu.is_available():
+                data = data.npu()
             # data = data.permute([2, 0, 1]).unsqueeze(0).float()
             with torch.no_grad():
                 data = data.to(self.cn_device)

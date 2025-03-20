@@ -323,8 +323,8 @@ class Face(object):
         self.threshold = heatmap_peak_thresh or params["heatmap_peak_thresh"]
         self.model = FaceNet()
         self.model.load_state_dict(torch.load(face_model_path))
-        # if torch.cuda.is_available():
-        #     self.model = self.model.cuda()
+        # if torch.npu.is_available():
+        #     self.model = self.model.npu()
             # print('cuda')
         self.model.eval()
 

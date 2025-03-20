@@ -53,7 +53,7 @@ def detect_compute_compatibility(CUDA_HOME, so_file):
 
 
 def collect_env_info():
-    has_gpu = torch.cuda.is_available()  # true for both CUDA & ROCM
+    has_gpu = torch.npu.is_available()  # true for both CUDA & ROCM
     torch_version = torch.__version__
 
     # NOTE that CUDA_HOME/ROCM_HOME could be None even when CUDA runtime libs are functional
@@ -131,15 +131,15 @@ def collect_env_info():
         pass
 
     if not has_gpu:
-        has_gpu_text = "No: torch.cuda.is_available() == False"
+        has_gpu_text = "No: torch.npu.is_available() == False"
     else:
         has_gpu_text = "Yes"
     data.append(("GPU available", has_gpu_text))
     if has_gpu:
         devices = defaultdict(list)
-        for k in range(torch.cuda.device_count()):
-            cap = ".".join((str(x) for x in torch.cuda.get_device_capability(k)))
-            name = torch.cuda.get_device_name(k) + f" (arch={cap})"
+        for k in range(torch.npu.device_count()):
+            cap = ".".join((str(x) for x in torch.npu.get_device_capability(k)))
+            name = torch.npu.get_device_name(k) + f" (arch={cap})"
             devices[name].append(str(k))
         for name, devids in devices.items():
             data.append(("GPU " + ",".join(devids), name))
@@ -205,7 +205,7 @@ def collect_env_info():
 
 
 def test_nccl_ops():
-    num_gpu = torch.cuda.device_count()
+    num_gpu = torch.npu.device_count()
     if os.access("/tmp", os.W_OK):
         import torch.multiprocessing as mp
 
@@ -230,8 +230,8 @@ if __name__ == "__main__":
     except ImportError:
         print(collect_env_info())
 
-    if torch.cuda.is_available():
-        num_gpu = torch.cuda.device_count()
+    if torch.npu.is_available():
+        num_gpu = torch.npu.device_count()
         for k in range(num_gpu):
             device = f"cuda:{k}"
             try:

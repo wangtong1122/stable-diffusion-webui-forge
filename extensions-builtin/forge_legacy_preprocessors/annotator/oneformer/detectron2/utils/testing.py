@@ -32,7 +32,7 @@ def get_model_no_weights(config_path):
     """
     cfg = model_zoo.get_config(config_path)
     if isinstance(cfg, CfgNode):
-        if not torch.cuda.is_available():
+        if not torch.npu.is_available():
             cfg.MODEL.DEVICE = "cpu"
         return build_model(cfg)
     else:
@@ -270,7 +270,7 @@ def unregister_custom_op_onnx_export(opname: str, opset_version: int, min_versio
 
 
 skipIfOnCPUCI = unittest.skipIf(
-    os.environ.get("CI") and not torch.cuda.is_available(),
+    os.environ.get("CI") and not torch.npu.is_available(),
     "The test is too slow on CPUs and will be executed on CircleCI's GPU jobs.",
 )
 

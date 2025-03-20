@@ -244,7 +244,7 @@ class SD3Inferencer:
         return math.isclose(max_sigma, sigma, rel_tol=1e-05) or sigma > max_sigma
 
     def fix_cond(self, cond):
-        cond, pooled = (cond[0].half().cuda(), cond[1].half().cuda())
+        cond, pooled = (cond[0].half().npu(), cond[1].half().npu())
         return {"c_crossattn": cond, "y": pooled}
 
     def do_sampling(
@@ -259,10 +259,10 @@ class SD3Inferencer:
         denoise=1.0,
     ) -> torch.Tensor:
         self.print("Sampling...")
-        latent = latent.half().cuda()
-        self.sd3.model = self.sd3.model.cuda()
-        noise = self.get_noise(seed, latent).cuda()
-        sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).cuda()
+        latent = latent.half().npu()
+        self.sd3.model = self.sd3.model.npu()
+        noise = self.get_noise(seed, latent).npu()
+        sigmas = self.get_sigmas(self.sd3.model.model_sampling, steps).npu()
         sigmas = sigmas[int(steps * (1 - denoise)) :]
         conditioning = self.fix_cond(conditioning)
         neg_cond = self.fix_cond(neg_cond)
@@ -287,8 +287,8 @@ class SD3Inferencer:
         batch_images = np.expand_dims(image_np, axis=0).repeat(1, axis=0)
         image_torch = torch.from_numpy(batch_images)
         image_torch = 2.0 * image_torch - 1.0
-        image_torch = image_torch.cuda()
-        self.vae.model = self.vae.model.cuda()
+        image_torch = image_torch.npu()
+        self.vae.model = self.vae.model.npu()
         latent = self.vae.model.encode(image_torch).cpu()
         self.vae.model = self.vae.model.cpu()
         self.print("Encoded")
@@ -296,8 +296,8 @@ class SD3Inferencer:
 
     def vae_decode(self, latent) -> Image.Image:
         self.print("Decoding latent to image...")
-        latent = latent.cuda()
-        self.vae.model = self.vae.model.cuda()
+        latent = latent.npu()
+        self.vae.model = self.vae.model.npu()
         image = self.vae.model.decode(latent)
         image = image.float()
         self.vae.model = self.vae.model.cpu()

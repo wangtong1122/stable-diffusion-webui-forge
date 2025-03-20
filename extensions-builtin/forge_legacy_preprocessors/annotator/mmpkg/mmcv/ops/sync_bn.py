@@ -45,7 +45,7 @@ class SyncBatchNormFunction(Function):
 
         assert isinstance(
                    input, (torch.HalfTensor, torch.FloatTensor,
-                           torch.cuda.HalfTensor, torch.cuda.FloatTensor)), \
+                           torch.npu.HalfTensor, torch.npu.FloatTensor)), \
                f'only support Half or Float Tensor, but {input.type()}'
         output = torch.zeros_like(input)
         input3d = input.flatten(start_dim=2)

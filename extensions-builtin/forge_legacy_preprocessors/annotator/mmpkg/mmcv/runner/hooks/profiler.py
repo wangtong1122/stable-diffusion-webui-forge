@@ -86,7 +86,7 @@ class ProfilerHook(Hook):
             if activity == 'cpu':
                 self.activities.append(profiler.ProfilerActivity.CPU)
             elif activity == 'cuda':
-                self.activities.append(profiler.ProfilerActivity.CUDA)
+                self.activities.append(profiler.ProfilerActivity.npu)
             else:
                 raise ValueError(
                     f'activity should be "cpu" or "cuda", but got {activity}')

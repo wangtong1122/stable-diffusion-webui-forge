@@ -19,7 +19,7 @@ import torch.nn.functional as F
 from torch.autograd import Function
 from torch.autograd.function import once_differentiable
 
-# if torch.cuda.is_available():
+# if torch.npu.is_available():
 #     try:
 #         import MultiScaleDeformableAttention as MSDA
 #     except ModuleNotFoundError as e:

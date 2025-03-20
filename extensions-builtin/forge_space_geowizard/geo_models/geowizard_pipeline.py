@@ -154,7 +154,7 @@ class DepthNormalEstimationPipeline(DiffusionPipeline):
         
         depth_preds = torch.concat(depth_pred_ls, axis=0).squeeze() #(10,224,768)
         normal_preds = torch.concat(normal_pred_ls, axis=0).squeeze()
-        torch.cuda.empty_cache()  # clear vram cache for ensembling
+        torch.npu.empty_cache()  # clear vram cache for ensembling
 
         # ----------------- Test-time ensembling -----------------
         if ensemble_size > 1:
@@ -292,7 +292,7 @@ class DepthNormalEstimationPipeline(DiffusionPipeline):
             geo_latent = self.scheduler.step(noise_pred, t, geo_latent).prev_sample
 
         geo_latent = geo_latent
-        torch.cuda.empty_cache()
+        torch.npu.empty_cache()
 
         depth = self.decode_depth(geo_latent[0][None])
         depth = torch.clip(depth, -1.0, 1.0)

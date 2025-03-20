@@ -11,7 +11,7 @@ if torch.__version__ == 'parrots':
         return 'GCC ' + parrots.version.compiler
 
     def get_compiling_cuda_version():
-        return parrots.version.cuda
+        return parrots.version.npu
 else:
     from ..utils import ext_loader
     ext_module = ext_loader.load_ext(

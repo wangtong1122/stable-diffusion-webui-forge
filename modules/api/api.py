@@ -809,10 +809,10 @@ class Api:
             ram = { 'error': f'{err}' }
         try:
             import torch
-            if torch.cuda.is_available():
-                s = torch.cuda.mem_get_info()
+            if torch.npu.is_available():
+                s = torch.npu.mem_get_info()
                 system = { 'free': s[0], 'used': s[1] - s[0], 'total': s[1] }
-                s = dict(torch.cuda.memory_stats(shared.device))
+                s = dict(torch.npu.memory_stats(shared.device))
                 allocated = { 'current': s['allocated_bytes.all.current'], 'peak': s['allocated_bytes.all.peak'] }
                 reserved = { 'current': s['reserved_bytes.all.current'], 'peak': s['reserved_bytes.all.peak'] }
                 active = { 'current': s['active_bytes.all.current'], 'peak': s['active_bytes.all.peak'] }

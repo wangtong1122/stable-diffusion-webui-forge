@@ -39,13 +39,13 @@ def collect_env():
     env_info['sys.platform'] = sys.platform
     env_info['Python'] = sys.version.replace('\n', '')
 
-    cuda_available = torch.cuda.is_available()
+    cuda_available = torch.npu.is_available()
     env_info['CUDA available'] = cuda_available
 
     if cuda_available:
         devices = defaultdict(list)
-        for k in range(torch.cuda.device_count()):
-            devices[torch.cuda.get_device_name(k)].append(str(k))
+        for k in range(torch.npu.device_count()):
+            devices[torch.npu.get_device_name(k)].append(str(k))
         for name, device_ids in devices.items():
             env_info['GPU ' + ','.join(device_ids)] = name
 

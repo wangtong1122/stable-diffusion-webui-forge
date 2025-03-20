@@ -44,7 +44,7 @@ def apply_leres(input_image, thr_a, thr_b, boost=False):
             from modules.modelloader import load_file_from_url
             load_file_from_url(remote_model_path_leres, model_dir=base_model_path)
 
-        if torch.cuda.is_available():
+        if torch.npu.is_available():
             checkpoint = torch.load(model_path)
         else:
             checkpoint = torch.load(model_path, map_location=torch.device('cpu'))
@@ -60,7 +60,7 @@ def apply_leres(input_image, thr_a, thr_b, boost=False):
             load_file_from_url(remote_model_path_pix2pix, model_dir=base_model_path)
 
         opt = TestOptions().parse()
-        if not torch.cuda.is_available():
+        if not torch.npu.is_available():
             opt.gpu_ids = []  # cpu mode
         pix2pixmodel = Pix2Pix4DepthModel(opt)
         pix2pixmodel.save_dir = base_model_path

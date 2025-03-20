@@ -35,7 +35,7 @@ class VisualizationDemo(object):
 
         self.parallel = parallel
         if parallel:
-            num_gpu = torch.cuda.device_count()
+            num_gpu = torch.npu.device_count()
             self.predictor = AsyncPredictor(cfg, num_gpus=num_gpu)
         else:
             self.predictor = DefaultPredictor(cfg)

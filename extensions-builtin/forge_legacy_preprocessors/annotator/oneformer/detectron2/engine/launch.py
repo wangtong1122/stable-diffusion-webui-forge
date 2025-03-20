@@ -94,9 +94,9 @@ def _distributed_worker(
     args,
     timeout=DEFAULT_TIMEOUT,
 ):
-    has_gpu = torch.cuda.is_available()
+    has_gpu = torch.npu.is_available()
     if has_gpu:
-        assert num_gpus_per_machine <= torch.cuda.device_count()
+        assert num_gpus_per_machine <= torch.npu.device_count()
     global_rank = machine_rank * num_gpus_per_machine + local_rank
     try:
         dist.init_process_group(
@@ -114,7 +114,7 @@ def _distributed_worker(
     # Setup the local process group.
     comm.create_local_process_group(num_gpus_per_machine)
     if has_gpu:
-        torch.cuda.set_device(local_rank)
+        torch.npu.set_device(local_rank)
 
     # synchronize is needed here to prevent a possible timeout after calling init_process_group
     # See: https://github.com/facebookresearch/maskrcnn-benchmark/issues/172

@@ -43,10 +43,10 @@ def find_batch_size(ensemble_size: int, input_res: int, dtype: torch.dtype) -> i
     Returns:
         `int`: Operating batch size.
     """
-    if not torch.cuda.is_available():
+    if not torch.npu.is_available():
         return 1
 
-    total_vram = torch.cuda.mem_get_info()[1] / 1024.0**3
+    total_vram = torch.npu.mem_get_info()[1] / 1024.0**3
     filtered_bs_search_table = [s for s in bs_search_table if s["dtype"] == dtype]
     for settings in sorted(
         filtered_bs_search_table,

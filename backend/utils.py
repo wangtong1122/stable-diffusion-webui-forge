@@ -152,7 +152,7 @@ def get_state_dict_after_quant(model, prefix=''):
         if hasattr(m, 'weight') and hasattr(m.weight, 'bnb_quantized'):
             if not m.weight.bnb_quantized:
                 original_device = m.weight.device
-                m.cuda()
+                m.npu()
                 m.to(original_device)
 
     sd = model.state_dict()

@@ -563,7 +563,7 @@ def statistics(data):
 #             print("Cannot resume from saved optimizer!")
 #             print(e)
 #
-#     scaler = torch.cuda.amp.GradScaler()
+#     scaler = torch.npu.amp.GradScaler()
 #
 #     batch_size = ds.batch_size
 #     gradient_step = ds.gradient_step
@@ -680,8 +680,8 @@ def statistics(data):
 #                     hypernetwork.eval()
 #                     rng_state = torch.get_rng_state()
 #                     cuda_rng_state = None
-#                     if torch.cuda.is_available():
-#                         cuda_rng_state = torch.cuda.get_rng_state_all()
+#                     if torch.npu.is_available():
+#                         cuda_rng_state = torch.npu.get_rng_state_all()
 #                     shared.sd_model.cond_stage_model.to(devices.device)
 #                     shared.sd_model.first_stage_model.to(devices.device)
 #
@@ -718,8 +718,8 @@ def statistics(data):
 #                         shared.sd_model.cond_stage_model.to(devices.cpu)
 #                         shared.sd_model.first_stage_model.to(devices.cpu)
 #                     torch.set_rng_state(rng_state)
-#                     if torch.cuda.is_available():
-#                         torch.cuda.set_rng_state_all(cuda_rng_state)
+#                     if torch.npu.is_available():
+#                         torch.npu.set_rng_state_all(cuda_rng_state)
 #                     hypernetwork.train()
 #                     if image is not None:
 #                         shared.state.assign_current_image(image)

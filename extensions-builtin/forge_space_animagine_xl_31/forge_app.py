@@ -17,11 +17,11 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 DESCRIPTION = "Animagine XL 3.1"
-if not torch.cuda.is_available():
+if not torch.npu.is_available():
     DESCRIPTION += "\n<p>Running on CPU 🥶 This demo does not work on CPU. </p>"
 IS_COLAB = utils.is_google_colab() or os.getenv("IS_COLAB") == "1"
 HF_TOKEN = os.getenv("HF_TOKEN")
-CACHE_EXAMPLES = torch.cuda.is_available() and os.getenv("CACHE_EXAMPLES") == "1"
+CACHE_EXAMPLES = torch.npu.is_available() and os.getenv("CACHE_EXAMPLES") == "1"
 MIN_IMAGE_SIZE = int(os.getenv("MIN_IMAGE_SIZE", "512"))
 MAX_IMAGE_SIZE = int(os.getenv("MAX_IMAGE_SIZE", "2048"))
 USE_TORCH_COMPILE = os.getenv("USE_TORCH_COMPILE") == "1"
@@ -36,7 +36,7 @@ MODEL = os.getenv(
 # torch.backends.cudnn.deterministic = True
 # torch.backends.cudnn.benchmark = False
 
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+device = torch.device("cuda:0" if torch.npu.is_available() else "cpu")
 
 
 def load_pipeline(model_name):

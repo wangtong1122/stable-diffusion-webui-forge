@@ -108,7 +108,7 @@ class TextLoggerHook(LoggerHook):
 
     def _get_max_memory(self, runner):
         device = getattr(runner.model, 'output_device', None)
-        mem = torch.cuda.max_memory_allocated(device=device)
+        mem = torch.npu.max_memory_allocated(device=device)
         mem_mb = torch.tensor([mem / (1024 * 1024)],
                               dtype=torch.int,
                               device=device)
@@ -153,7 +153,7 @@ class TextLoggerHook(LoggerHook):
                 log_str += f'time: {log_dict["time"]:.3f}, ' \
                            f'data_time: {log_dict["data_time"]:.3f}, '
                 # statistic memory
-                if torch.cuda.is_available():
+                if torch.npu.is_available():
                     log_str += f'memory: {log_dict["memory"]}, '
         else:
             # val/test time
@@ -226,7 +226,7 @@ class TextLoggerHook(LoggerHook):
 
         if 'time' in runner.log_buffer.output:
             # statistic memory
-            if torch.cuda.is_available():
+            if torch.npu.is_available():
                 log_dict['memory'] = self._get_max_memory(runner)
 
         log_dict = dict(log_dict, **runner.log_buffer.output)

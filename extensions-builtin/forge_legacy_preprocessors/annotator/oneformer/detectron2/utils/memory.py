@@ -27,7 +27,7 @@ def retry_if_cuda_oom(func):
     """
     Makes a function retry itself after encountering
     pytorch's CUDA OOM error.
-    It will first retry after calling `torch.cuda.empty_cache()`.
+    It will first retry after calling `torch.npu.empty_cache()`.
 
     If that still fails, it will then retry by trying to convert inputs to CPUs.
     In this case, it expects the function to dispatch to CPU implementation.
@@ -70,7 +70,7 @@ def retry_if_cuda_oom(func):
             return func(*args, **kwargs)
 
         # Clear cache and retry
-        torch.cuda.empty_cache()
+        torch.npu.empty_cache()
         with _ignore_torch_cuda_oom():
             return func(*args, **kwargs)
 

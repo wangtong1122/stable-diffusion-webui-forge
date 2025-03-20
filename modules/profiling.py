@@ -13,7 +13,7 @@ class Profiler:
         if "CPU" in shared.opts.profiling_activities:
             activities.append(torch.profiler.ProfilerActivity.CPU)
         if "CUDA" in shared.opts.profiling_activities:
-            activities.append(torch.profiler.ProfilerActivity.CUDA)
+            activities.append(torch.profiler.ProfilerActivity.npu)
 
         if not activities:
             self.profiler = None

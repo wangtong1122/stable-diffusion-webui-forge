@@ -12,11 +12,11 @@ from annotator.mmpkg.mmcv.utils import TORCH_VERSION, digit_version
 from .dist_utils import allreduce_grads as _allreduce_grads
 
 try:
-    # If PyTorch version >= 1.6.0, torch.cuda.amp.autocast would be imported
+    # If PyTorch version >= 1.6.0, torch.npu.amp.autocast would be imported
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
     # Note that when PyTorch >= 1.6.0, we still cast tensor types to fp16
     # manually, so the behavior may not be consistent with real amp.
-    from torch.cuda.amp import autocast
+    from torch.npu.amp import autocast
 except ImportError:
     pass
 
@@ -58,7 +58,7 @@ def auto_fp16(apply_to=None, out_fp32=False):
     This decorator is useful when you write custom modules and want to support
     mixed precision training. If inputs arguments are fp32 tensors, they will
     be converted to fp16 automatically. Arguments other than fp32 tensors are
-    ignored. If you are using PyTorch >= 1.6, torch.cuda.amp is used as the
+    ignored. If you are using PyTorch >= 1.6, torch.npu.amp is used as the
     backend, otherwise, original mmcv implementation will be adopted.
 
     Args:
@@ -146,7 +146,7 @@ def force_fp32(apply_to=None, out_fp16=False):
     in fp32 mode, then this decorator can handle it. If inputs arguments are
     fp16 tensors, they will be converted to fp32 automatically. Arguments other
     than fp16 tensors are ignored. If you are using PyTorch >= 1.6,
-    torch.cuda.amp is used as the backend, otherwise, original mmcv
+    torch.npu.amp is used as the backend, otherwise, original mmcv
     implementation will be adopted.
 
     Args:
@@ -234,7 +234,7 @@ def allreduce_grads(params, coalesce=True, bucket_size_mb=-1):
 def wrap_fp16_model(model):
     """Wrap the FP32 model to FP16.
 
-    If you are using PyTorch >= 1.6, torch.cuda.amp is used as the
+    If you are using PyTorch >= 1.6, torch.npu.amp is used as the
     backend, otherwise, original mmcv implementation will be adopted.
 
     For PyTorch >= 1.6, this function will

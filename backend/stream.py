@@ -3,8 +3,8 @@ from backend.args import args
 
 
 def stream_context():
-    if torch.cuda.is_available():
-        return torch.cuda.stream
+    if torch.npu.is_available():
+        return torch.npu.stream
 
     if torch.xpu.is_available():
         return torch.xpu.stream
@@ -14,10 +14,10 @@ def stream_context():
 
 def get_current_stream():
     try:
-        if torch.cuda.is_available():
-            device = torch.device(torch.cuda.current_device())
-            stream = torch.cuda.current_stream(device)
-            with torch.cuda.stream(stream):
+        if torch.npu.is_available():
+            device = torch.device(torch.npu.current_device())
+            stream = torch.npu.current_stream(device)
+            with torch.npu.stream(stream):
                 torch.zeros((1, 1)).to(device, torch.float32)
             stream.synchronize()
             return stream
@@ -34,10 +34,10 @@ def get_current_stream():
 
 def get_new_stream():
     try:
-        if torch.cuda.is_available():
-            device = torch.device(torch.cuda.current_device())
-            stream = torch.cuda.Stream(device)
-            with torch.cuda.stream(stream):
+        if torch.npu.is_available():
+            device = torch.device(torch.npu.current_device())
+            stream = torch.npu.Stream(device)
+            with torch.npu.stream(stream):
                 torch.zeros((1, 1)).to(device, torch.float32)
             stream.synchronize()
             return stream
@@ -58,4 +58,4 @@ def should_use_stream():
 
 current_stream = get_current_stream()
 mover_stream = get_new_stream()
-stream_activated = args.cuda_stream
+stream_activated = args.npu_stream

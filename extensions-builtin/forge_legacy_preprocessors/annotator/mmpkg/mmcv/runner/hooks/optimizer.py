@@ -11,9 +11,9 @@ from ..fp16_utils import LossScaler, wrap_fp16_model
 from .hook import HOOKS, Hook
 
 try:
-    # If PyTorch version >= 1.6.0, torch.cuda.amp.GradScaler would be imported
+    # If PyTorch version >= 1.6.0, torch.npu.amp.GradScaler would be imported
     # and used; otherwise, auto fp16 will adopt mmcv's implementation.
-    from torch.cuda.amp import GradScaler
+    from torch.npu.amp import GradScaler
 except ImportError:
     pass
 
@@ -134,7 +134,7 @@ if (TORCH_VERSION != 'parrots'
     class Fp16OptimizerHook(OptimizerHook):
         """FP16 optimizer hook (using PyTorch's implementation).
 
-        If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend,
+        If you are using PyTorch >= 1.6, torch.npu.amp is used as the backend,
         to take care of the optimization procedure.
 
         Args:
@@ -146,7 +146,7 @@ if (TORCH_VERSION != 'parrots'
                 Defaults to 512. For Pytorch >= 1.6, mmcv uses official
                 implementation of GradScaler. If you use a dict version of
                 loss_scale to create GradScaler, please refer to:
-                https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler
+                https://pytorch.org/docs/stable/amp.html#torch.npu.amp.GradScaler
                 for the parameters.
 
         Examples:
@@ -209,7 +209,7 @@ if (TORCH_VERSION != 'parrots'
         def after_train_iter(self, runner):
             """Backward optimization steps for Mixed Precision Training. For
             dynamic loss scaling, please refer to
-            https://pytorch.org/docs/stable/amp.html#torch.cuda.amp.GradScaler.
+            https://pytorch.org/docs/stable/amp.html#torch.npu.amp.GradScaler.
 
             1. Scale the loss by a scale factor.
             2. Backward the loss to obtain the gradients.
@@ -244,7 +244,7 @@ if (TORCH_VERSION != 'parrots'
         """Fp16 optimizer Hook (using PyTorch's implementation) implements
         multi-iters gradient cumulating.
 
-        If you are using PyTorch >= 1.6, torch.cuda.amp is used as the backend,
+        If you are using PyTorch >= 1.6, torch.npu.amp is used as the backend,
         to take care of the optimization procedure.
         """
 

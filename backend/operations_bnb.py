@@ -21,7 +21,7 @@ def functional_dequantize_4bit(weight):
     weight_original_device = weight.device
 
     if weight_original_device.type != 'cuda':
-        weight = weight.cuda()
+        weight = weight.npu()
 
     weight = dequantize_4bit(weight, quant_state=weight.quant_state, blocksize=weight.blocksize, quant_type=weight.quant_type)
 
@@ -166,6 +166,6 @@ class ForgeLoader4Bit(torch.nn.Module):
         if weight_original_device.type == 'cuda':
             weight = weight.to(weight_original_device)
         else:
-            weight = weight.cuda().to(weight_original_device)
+            weight = weight.npu().to(weight_original_device)
         self.weight = weight
         return self

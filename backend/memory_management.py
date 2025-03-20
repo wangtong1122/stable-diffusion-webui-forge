@@ -97,7 +97,7 @@ def get_torch_device():
         if is_intel_xpu():
             return torch.device("xpu", torch.xpu.current_device())
         else:
-            return torch.device(torch.cuda.current_device())
+            return torch.device(torch.npu.current_device())
 
 
 def get_total_memory(dev=None, torch_total_too=False):
@@ -118,9 +118,9 @@ def get_total_memory(dev=None, torch_total_too=False):
             mem_total_torch = mem_reserved
             mem_total = torch.xpu.get_device_properties(dev).total_memory
         else:
-            stats = torch.cuda.memory_stats(dev)
+            stats = torch.npu.memory_stats(dev)
             mem_reserved = stats['reserved_bytes.all.current']
-            _, mem_total_cuda = torch.cuda.mem_get_info(dev)
+            _, mem_total_cuda = torch.npu.mem_get_info(dev)
             mem_total_torch = mem_reserved
             mem_total = mem_total_cuda
 
@@ -140,7 +140,7 @@ except:
     pass
 
 try:
-    OOM_EXCEPTION = torch.cuda.OutOfMemoryError
+    OOM_EXCEPTION = torch.npu.OutOfMemoryError
 except:
     OOM_EXCEPTION = Exception
 
@@ -177,7 +177,7 @@ else:
 def is_nvidia():
     global cpu_state
     if cpu_state == CPUState.GPU:
-        if torch.version.cuda:
+        if torch.version.npu:
             return True
     return False
 
@@ -195,7 +195,7 @@ try:
         if int(torch_version[0]) >= 2:
             if ENABLE_PYTORCH_ATTENTION == False and args.attention_split == False and args.attention_quad == False:
                 ENABLE_PYTORCH_ATTENTION = True
-            if torch.cuda.is_bf16_supported() and torch.cuda.get_device_properties(torch.cuda.current_device()).major >= 8:
+            if torch.npu.is_bf16_supported() and torch.npu.get_device_properties(torch.npu.current_device()).major >= 8:
                 VAE_DTYPES = [torch.bfloat16] + VAE_DTYPES
     if is_intel_xpu():
         if args.attention_split == False and args.attention_quad == False:
@@ -212,9 +212,9 @@ if args.vae_in_cpu:
 VAE_ALWAYS_TILED = False
 
 if ENABLE_PYTORCH_ATTENTION:
-    torch.backends.cuda.enable_math_sdp(True)
-    torch.backends.cuda.enable_flash_sdp(True)
-    torch.backends.cuda.enable_mem_efficient_sdp(True)
+    torch.backends.npu.enable_math_sdp(True)
+    torch.backends.npu.enable_flash_sdp(True)
+    torch.backends.npu.enable_mem_efficient_sdp(True)
 
 if args.always_low_vram:
     set_vram_to = VRAMState.LOW_VRAM
@@ -261,16 +261,16 @@ def get_torch_device_name(device):
     if hasattr(device, 'type'):
         if device.type == "cuda":
             try:
-                allocator_backend = torch.cuda.get_allocator_backend()
+                allocator_backend = torch.npu.get_allocator_backend()
             except:
                 allocator_backend = ""
-            return "{} {} : {}".format(device, torch.cuda.get_device_name(device), allocator_backend)
+            return "{} {} : {}".format(device, torch.npu.get_device_name(device), allocator_backend)
         else:
             return "{}".format(device.type)
     elif is_intel_xpu():
         return "{} {}".format(device, torch.xpu.get_device_name(device))
     else:
-        return "CUDA {}: {}".format(device, torch.cuda.get_device_name(device))
+        return "CUDA {}: {}".format(device, torch.npu.get_device_name(device))
 
 
 try:
@@ -281,7 +281,7 @@ except:
     print("Could not pick default device.")
 
 if 'rtx' in torch_device_name.lower():
-    if not args.cuda_malloc:
+    if not args.npu_malloc:
         print('Hint: your device supports --cuda-malloc for potential speed improvements.')
 
 
@@ -1020,10 +1020,10 @@ def get_free_memory(dev=None, torch_free_too=False):
             mem_free_xpu = torch.xpu.get_device_properties(dev).total_memory - mem_reserved
             mem_free_total = mem_free_xpu + mem_free_torch
         else:
-            stats = torch.cuda.memory_stats(dev)
+            stats = torch.npu.memory_stats(dev)
             mem_active = stats['active_bytes.all.current']
             mem_reserved = stats['reserved_bytes.all.current']
-            mem_free_cuda, _ = torch.cuda.mem_get_info(dev)
+            mem_free_cuda, _ = torch.npu.mem_get_info(dev)
             mem_free_torch = mem_reserved - mem_active
             mem_free_total = mem_free_cuda + mem_free_torch
 
@@ -1094,7 +1094,7 @@ def should_use_fp16(device=None, model_params=0, prioritize_performance=True, ma
     if torch.version.hip:
         return True
 
-    props = torch.cuda.get_device_properties("cuda")
+    props = torch.npu.get_device_properties("cuda")
     if props.major >= 8:
         return True
 
@@ -1152,11 +1152,11 @@ def should_use_bf16(device=None, model_params=0, prioritize_performance=True, ma
     if device is None:
         device = torch.device("cuda")
 
-    props = torch.cuda.get_device_properties(device)
+    props = torch.npu.get_device_properties(device)
     if props.major >= 8:
         return True
 
-    if torch.cuda.is_bf16_supported():
+    if torch.npu.is_bf16_supported():
         # This device is an old enough device but bf16 somewhat reports supported.
         # So in this case bf16 should only be used as storge dtype
         if manual_cast:
@@ -1170,10 +1170,10 @@ def should_use_bf16(device=None, model_params=0, prioritize_performance=True, ma
 
 def can_install_bnb():
     try:
-        if not torch.cuda.is_available():
+        if not torch.npu.is_available():
             return False
 
-        cuda_version = tuple(int(x) for x in torch.version.cuda.split('.'))
+        cuda_version = tuple(int(x) for x in torch.version.npu.split('.'))
 
         if cuda_version >= (11, 7):
             return True
@@ -1192,10 +1192,10 @@ def soft_empty_cache(force=False):
         torch.mps.empty_cache()
     elif is_intel_xpu():
         torch.xpu.empty_cache()
-    elif torch.cuda.is_available():
+    elif torch.npu.is_available():
         if force or is_nvidia():  # This seems to make things worse on ROCm so I only do it for cuda
-            torch.cuda.empty_cache()
-            torch.cuda.ipc_collect()
+            torch.npu.empty_cache()
+            torch.npu.ipc_collect()
     signal_empty_cache = False
     return
 

@@ -15,7 +15,7 @@ from utils import accuracy, AverageMeter
 
 has_native_amp = False
 try:
-    if getattr(torch.cuda.amp, 'autocast') is not None:
+    if getattr(torch.npu.amp, 'autocast') is not None:
         has_native_amp = True
 except AttributeError:
     pass
@@ -74,7 +74,7 @@ def main():
         if not has_native_amp:
             print("Native Torch AMP is not available (requires torch >= 1.6), using FP32.")
         else:
-            amp_autocast = torch.cuda.amp.autocast
+            amp_autocast = torch.npu.amp.autocast
 
     # create model
     model = geffnet.create_model(
@@ -101,10 +101,10 @@ def main():
 
     if not args.no_cuda:
         if args.num_gpu > 1:
-            model = torch.nn.DataParallel(model, device_ids=list(range(args.num_gpu))).cuda()
+            model = torch.nn.DataParallel(model, device_ids=list(range(args.num_gpu))).npu()
         else:
-            model = model.cuda()
-        criterion = criterion.cuda()
+            model = model.npu()
+        criterion = criterion.npu()
 
     loader = create_loader(
         Dataset(args.data, load_bytes=args.tf_preprocessing),
@@ -128,8 +128,8 @@ def main():
     with torch.no_grad():
         for i, (input, target) in enumerate(loader):
             if not args.no_cuda:
-                target = target.cuda()
-                input = input.cuda()
+                target = target.npu()
+                input = input.npu()
             if args.channels_last:
                 input = input.contiguous(memory_format=torch.channels_last)
 

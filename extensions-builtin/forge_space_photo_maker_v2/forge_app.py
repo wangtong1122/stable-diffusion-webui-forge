@@ -36,7 +36,7 @@ DEFAULT_ASPECT_RATIO = ASPECT_RATIO_LABELS[0]
 enable_doodle_arg = False
 photomaker_ckpt = hf_hub_download(repo_id="TencentARC/PhotoMaker-V2", filename="photomaker-v2.bin", repo_type="model")
 
-if torch.cuda.is_available() and torch.cuda.is_bf16_supported():
+if torch.npu.is_available() and torch.npu.is_bf16_supported():
     torch_dtype = torch.bfloat16
 else:
     torch_dtype = torch.float16
