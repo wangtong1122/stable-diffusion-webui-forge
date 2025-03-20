@@ -25,7 +25,7 @@ run_extension_installer = launch_utils.run_extension_installer
 prepare_environment = launch_utils.prepare_environment
 configure_for_tests = launch_utils.configure_for_tests
 start = launch_utils.start
-
+import torch_npu
 
 def main():
     if args.dump_sysinfo:

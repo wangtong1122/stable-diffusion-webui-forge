@@ -1,5 +1,5 @@
 import torch
-
+import torch_npu
 from huggingface_guess import model_list
 # from huggingface_guess.latent import SD3
 from backend.diffusion_engine.base import ForgeDiffusionEngine, ForgeObjects
