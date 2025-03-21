@@ -904,7 +904,7 @@ class MMDiTX(nn.Module):
         hw = x.shape[-2:]
         # The line below should be unnecessary when full integrated.
         x = x[:1,:16,:,:] 
-        x = self.x_embedder(x) + self.cropped_pos_embed(hw).to("cuda")
+        x = self.x_embedder(x) + self.cropped_pos_embed(hw).to("npu")
         c = self.t_embedder(t, dtype=x.dtype)  # (N, D)
         if y is not None:
             y = self.y_embedder(y)  # (N, D)

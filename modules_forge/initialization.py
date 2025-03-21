@@ -51,7 +51,7 @@ def initialize_forge():
         os.environ['CUDA_VISIBLE_DEVICES'] = str(args.gpu_device_id)
         print("Set device to:", args.gpu_device_id)
 
-    if args.npu_malloc:
+    if args.cuda_malloc:
         from modules_forge.npu_malloc import try_cuda_malloc
         try_cuda_malloc()
 

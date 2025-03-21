@@ -177,7 +177,7 @@ else:
 def is_nvidia():
     global cpu_state
     if cpu_state == CPUState.GPU:
-        if torch.version.npu:
+        if torch.version.cuda:
             return True
     return False
 
@@ -1063,6 +1063,7 @@ def is_device_cuda(device):
 
 
 def should_use_fp16(device=None, model_params=0, prioritize_performance=True, manual_cast=False):
+    return True
     global directml_enabled
 
     if device is not None:
@@ -1094,7 +1095,7 @@ def should_use_fp16(device=None, model_params=0, prioritize_performance=True, ma
     if torch.version.hip:
         return True
 
-    props = torch.npu.get_device_properties("cuda")
+    props = torch.npu.get_device_properties("npu")
     if props.major >= 8:
         return True
 
